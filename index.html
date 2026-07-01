@@ -18,6 +18,7 @@
   --weekly:#8b5cf6;--weekly-soft:#f5f3ff;
   --monthly:#f59e0b;--monthly-soft:#fffbeb;
   --danger:#ef4444;--danger-soft:#fef2f2;
+  --reminder:#f59e0b;--reminder-soft:#fff7ed;
   --radius:18px;--radius-sm:12px;--radius-xs:8px;
   --shadow-sm:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.05);
   --shadow:0 2px 6px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05);
@@ -65,6 +66,8 @@ input,textarea,select{font:inherit;color:inherit}
 .icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all var(--t);font-size:15px}
 .icon-btn:hover{background:var(--card-2);color:var(--text-1)}
 .icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.icon-btn.reminder-on{color:var(--reminder);background:var(--reminder-soft)}
+.icon-btn.reminder-on:hover{background:#fde6c1;color:#b45309}
 
 /* Cards */
 .cards{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;max-height:480px;overflow-y:auto}
@@ -92,6 +95,7 @@ input,textarea,select{font:inherit;color:inherit}
 .badge.monthly{background:var(--monthly-soft);color:var(--monthly)}
 .badge.overdue{background:var(--danger-soft);color:var(--danger)}
 .badge.streak{background:#fff7ed;color:#ea580c}
+.badge.reminder{background:var(--reminder-soft);color:#b45309}
 .card-actions{display:flex;gap:2px;opacity:0;transition:opacity var(--t);flex-shrink:0}
 .card:hover .card-actions,.card:focus-within .card-actions{opacity:1}
 .card-actions .icon-btn{width:26px;height:26px;font-size:13px}
@@ -133,6 +137,27 @@ input,textarea,select{font:inherit;color:inherit}
 /* Toast */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text-1);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;box-shadow:var(--shadow-lg);opacity:0;transition:all 280ms ease-out;pointer-events:none;z-index:200;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Reminder modal (smaller, separate from main modal) */
+.reminder-modal{max-width:360px}
+.reminder-hint{margin-top:10px;padding:9px 12px;background:var(--reminder-soft);border-radius:var(--radius-xs);color:#92400e;font-size:12px;line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+.reminder-hint .hint-icon{flex-shrink:0;font-size:14px;line-height:1.55}
+.reminder-hint b{color:#7c2d12;font-weight:600}
+
+/* Reminder alert banner (top slide-down) */
+.alert-banner{position:fixed;top:16px;left:50%;transform:translate(-50%,-160%);z-index:300;background:#fff;border:1px solid var(--border);box-shadow:var(--shadow-lg);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;width:min(420px,calc(100vw - 32px));transition:transform 320ms cubic-bezier(.4,0,.2,1)}
+.alert-banner.show{transform:translate(-50%,0)}
+.alert-banner .alert-bell{width:36px;height:36px;border-radius:10px;background:var(--reminder-soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;animation:bellShake 800ms ease-in-out}
+@keyframes bellShake{0%,100%{transform:rotate(0)}10%,30%,50%,70%,90%{transform:rotate(-12deg)}20%,40%,60%,80%{transform:rotate(12deg)}}
+.alert-banner .alert-body{flex:1;min-width:0}
+.alert-banner .alert-title{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:2px}
+.alert-banner .alert-text{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.alert-banner .alert-action{padding:6px 10px;border-radius:8px;background:var(--reminder-soft);color:#b45309;font-size:12px;font-weight:500;flex-shrink:0}
+.alert-banner .alert-action:hover{background:#fde6c1}
+.alert-banner .alert-close{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:14px;flex-shrink:0}
+.alert-banner .alert-close:hover{background:var(--card-2);color:var(--text-1)}
+.alert-banner .alert-progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--reminder);border-radius:0 0 14px 14px;transform-origin:left;animation:autoDismiss 12s linear forwards}
+@keyframes autoDismiss{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
 @media (max-width:480px){.app{padding:20px 14px 60px}.brand h1{font-size:24px}.stat-value{font-size:18px}.panel-header{padding:14px}.cards{padding:10px}}
 </style>
@@ -276,6 +301,49 @@ input,textarea,select{font:inherit;color:inherit}
   </div>
 </div>
 
+<!-- Reminder config modal -->
+<div class="modal hidden" id="reminder-modal">
+  <div class="modal-content reminder-modal">
+    <div class="modal-header">
+      <h2>🔔 设置提醒</h2>
+      <button class="icon-btn" id="reminder-close" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="r-time">提醒时间 <span class="hint">(每天到这个时间会响)</span></label>
+        <input type="time" id="r-time" value="09:00">
+      </div>
+      <div class="reminder-hint" id="r-hint">
+        <span class="hint-icon">💡</span>
+        <span id="r-hint-text"></span>
+      </div>
+      <div class="form-group" id="r-perm-group" hidden>
+        <div class="reminder-hint" style="background:var(--danger-soft);color:var(--danger)">
+          <span class="hint-icon">⚠️</span>
+          <span id="r-perm-text">系统通知权限未开启，将无法弹出系统通知（仍会播放声音和顶部横幅）</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-danger hidden" id="r-clear">清除提醒</button>
+      <button type="button" class="btn btn-ghost" id="r-cancel">取消</button>
+      <button type="button" class="btn btn-primary" id="r-save">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- In-page alert banner (for when page is in foreground) -->
+<div class="alert-banner" id="alert-banner" hidden>
+  <div class="alert-bell">🔔</div>
+  <div class="alert-body">
+    <div class="alert-title" id="alert-title">待办提醒</div>
+    <div class="alert-text" id="alert-text"></div>
+  </div>
+  <button class="alert-action" id="alert-action">查看</button>
+  <button class="alert-close" id="alert-close" aria-label="关闭">✕</button>
+  <div class="alert-progress" id="alert-progress"></div>
+</div>
+
 <input type="file" id="import-file" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
@@ -416,16 +484,23 @@ input,textarea,select{font:inherit;color:inherit}
     }
     return '';
   }
+  function reminderBadgeHTML(todo){
+    if(!todo.reminder || !todo.reminder.enabled) return '';
+    return '<span class="badge reminder">🔔 '+todo.reminder.time+'</span>';
+  }
   function cardHTML(todo){
     const done = isDone(todo);
+    const hasR = !!(todo.reminder && todo.reminder.enabled);
     return '<div class="card '+(done?'completed':'')+'" data-id="'+todo.id+'">'
       + '<div class="card-check" data-action="toggle" role="checkbox" aria-checked="'+done+'" tabindex="0"></div>'
       + '<div class="card-body" data-action="edit">'
       +   '<div class="card-title">'+esc(todo.title)+'</div>'
       +   (todo.description?'<div class="card-desc">'+esc(todo.description)+'</div>':'')
       +   metaHTML(todo)
+      +   (hasR ? '<div class="card-meta">'+reminderBadgeHTML(todo)+'</div>' : '')
       + '</div>'
       + '<div class="card-actions">'
+      +   '<button class="icon-btn'+(hasR?' reminder-on':'')+'" data-action="reminder" title="'+(hasR?'提醒 '+todo.reminder.time+'（点击修改）':'设置提醒')+'" aria-label="提醒">'+(hasR?'🔔':'🔕')+'</button>'
       +   '<button class="icon-btn" data-action="edit" title="编辑" aria-label="编辑">✎</button>'
       +   '<button class="icon-btn danger" data-action="delete" title="删除" aria-label="删除">🗑</button>'
       + '</div></div>';
@@ -481,6 +556,8 @@ input,textarea,select{font:inherit;color:inherit}
     save(); render();
   }
   function del(id){
+    const t = state.todos.find(x=>x.id===id);
+    if(t && t.reminder && t.reminder.timeoutId) clearTimeout(t.reminder.timeoutId);
     state.todos = state.todos.filter(x=>x.id!==id);
     save(); render();
     showToast('已删除');
@@ -563,6 +640,7 @@ input,textarea,select{font:inherit;color:inherit}
       else if(t.type==='weekly') t.weekDay = Number(form.weekDay.value);
       else if(t.type==='monthly') t.monthDay = Math.max(1, Math.min(31, Number(form.monthDay.value)||1));
       state.todos.push(t);
+      if(t.reminder && t.reminder.enabled) scheduleReminder(t);
       showToast('已添加');
     }
     save(); render(); closeModal();
@@ -586,7 +664,11 @@ input,textarea,select{font:inherit;color:inherit}
         if(!data || !Array.isArray(data.todos)) throw new Error('文件格式不对');
         if(!confirm('导入将覆盖当前所有数据，确定继续？')) return;
         state = { todos: data.todos };
+        clearAllReminderTimeouts();
         save(); render();
+        // Rebuild timeouts for any reminders in the imported data
+        scheduleAllReminders();
+        checkMissedReminders();
         showToast('已导入，共 '+state.todos.length+' 条');
       }catch(err){ showToast('导入失败：'+err.message); }
     };
@@ -601,6 +683,309 @@ input,textarea,select{font:inherit;color:inherit}
     el.classList.add('show');
     clearTimeout(toastT);
     toastT = setTimeout(()=>el.classList.remove('show'), 1800);
+  }
+
+  // ====== Reminder (sound, notification, scheduling) ======
+  let audioCtx = null;
+  function getAudioContext(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if(audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }catch(e){ return null; }
+  }
+  function playNotificationSound(){
+    const ctx = getAudioContext();
+    if(!ctx) return;
+    try{
+      const t0 = ctx.currentTime + 0.02;
+      // Soft two-tone chime: E6 -> G6
+      const notes = [
+        { freq: 1318.5, start: 0,    dur: 0.32, vol: 0.22 },
+        { freq: 1568,   start: 0.22, dur: 0.55, vol: 0.22 }
+      ];
+      notes.forEach(n => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(n.freq, t0 + n.start);
+        gain.gain.setValueAtTime(0, t0 + n.start);
+        gain.gain.linearRampToValueAtTime(n.vol, t0 + n.start + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + n.start + n.dur);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t0 + n.start);
+        osc.stop(t0 + n.start + n.dur + 0.02);
+      });
+    }catch(e){ console.warn('sound failed', e); }
+  }
+
+  // Permission state (cached)
+  function notifPerm(){
+    return (typeof Notification !== 'undefined') ? Notification.permission : 'unsupported';
+  }
+  function requestNotifPerm(){
+    if(typeof Notification === 'undefined') return Promise.resolve('unsupported');
+    if(Notification.permission === 'granted' || Notification.permission === 'denied'){
+      return Promise.resolve(Notification.permission);
+    }
+    try{ return Notification.requestPermission(); }
+    catch(e){ return Promise.resolve('denied'); }
+  }
+
+  // Show a system notification (only when page is in background, or as supplementary)
+  function showSystemNotification(todo){
+    if(notifPerm() !== 'granted') return;
+    try{
+      const n = new Notification('待办提醒 · '+todo.title, {
+        body: todo.description || '点击查看',
+        tag: 'todo-'+todo.id,
+        requireInteraction: true,
+        silent: false
+      });
+      n.onclick = () => { window.focus(); n.close(); };
+    }catch(e){ /* ignore */ }
+  }
+
+  // In-page alert banner (always shown, since foreground suppresses system notifications)
+  let alertDismissT = null;
+  function showInPageBanner(todo){
+    const banner = document.getElementById('alert-banner');
+    const titleEl = document.getElementById('alert-title');
+    const textEl = document.getElementById('alert-text');
+    const actionBtn = document.getElementById('alert-action');
+    const progress = document.getElementById('alert-progress');
+    titleEl.textContent = '待办提醒 · '+todo.title;
+    textEl.textContent = todo.description || (todo.type==='once'?(todo.dueDate||'今天'):'该去打卡啦');
+    // restart animation
+    progress.style.animation = 'none';
+    void progress.offsetWidth;
+    progress.style.animation = '';
+    banner.hidden = false;
+    requestAnimationFrame(()=> banner.classList.add('show'));
+    actionBtn.onclick = () => { dismissAlert(); openModal(null, todo.id); };
+    clearTimeout(alertDismissT);
+    alertDismissT = setTimeout(dismissAlert, 12000);
+  }
+  function dismissAlert(){
+    const banner = document.getElementById('alert-banner');
+    if(!banner || banner.hidden) return;
+    banner.classList.remove('show');
+    setTimeout(()=>{ banner.hidden = true; }, 350);
+    clearTimeout(alertDismissT);
+  }
+
+  // Compute the next datetime a reminder should fire for a given todo
+  function getNextFireTime(todo){
+    if(!todo.reminder || !todo.reminder.enabled) return null;
+    const parts = (todo.reminder.time || '09:00').split(':');
+    const h = Math.max(0, Math.min(23, Number(parts[0]) || 0));
+    const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
+    const now = new Date();
+
+    if(todo.type === 'once'){
+      const ds = todo.dueDate || today();
+      const [y, mo, d] = ds.split('-').map(Number);
+      const t = new Date(y, (mo||1)-1, d||1, h, m, 0, 0);
+      if(t < now) return null; // past
+      if(todo.reminder.lastFiredPeriod === ds) return null; // already fired
+      return t;
+    }
+    if(todo.type === 'daily'){
+      // Skip if today's slot already completed
+      if(isDone(todo)) return null;
+      let t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+      if(t <= now || todo.reminder.lastFiredPeriod === today()){
+        t.setDate(t.getDate() + 1);
+      }
+      return t;
+    }
+    if(todo.type === 'weekly'){
+      if(isDone(todo)) return null;
+      const targetDay = (todo.weekDay == null ? 1 : todo.weekDay);
+      let t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
+      let diff = (targetDay - t.getDay() + 7) % 7;
+      if(diff === 0 && t <= now) diff = 7;
+      t.setDate(t.getDate() + diff);
+      return t;
+    }
+    if(todo.type === 'monthly'){
+      if(isDone(todo)) return null;
+      const target = Math.max(1, Math.min(28, Number(todo.monthDay) || 1));
+      let t = new Date(now.getFullYear(), now.getMonth(), target, h, m, 0, 0);
+      if(t <= now) t = new Date(now.getFullYear(), now.getMonth() + 1, target, h, m, 0, 0);
+      return t;
+    }
+    return null;
+  }
+
+  function scheduleReminder(todo){
+    // Clear any existing timeout
+    if(todo.reminder && todo.reminder.timeoutId){
+      clearTimeout(todo.reminder.timeoutId);
+      todo.reminder.timeoutId = null;
+    }
+    const next = getNextFireTime(todo);
+    if(!next) return;
+    const delay = next.getTime() - Date.now();
+    if(delay <= 0) return;
+    todo.reminder.timeoutId = setTimeout(() => {
+      todo.reminder.timeoutId = null;
+      fireReminder(todo);
+      // Recurring: reschedule next occurrence
+      if(todo.type !== 'once'){
+        // small delay to let the firing animations settle
+        setTimeout(()=> scheduleReminder(todo), 100);
+      }
+    }, delay);
+  }
+
+  function scheduleAllReminders(){
+    // scheduleReminder() itself clears any existing timeout on the same todo,
+    // so calling it for every todo is enough. (Per-todo cleanup also happens in del().)
+    state.todos.forEach(t => scheduleReminder(t));
+  }
+
+  // Clear all pending reminder timeouts across the whole state.
+  // Used when the state is wholesale replaced (e.g. import).
+  function clearAllReminderTimeouts(){
+    for(const t of state.todos){
+      if(t.reminder && t.reminder.timeoutId){
+        clearTimeout(t.reminder.timeoutId);
+        t.reminder.timeoutId = null;
+      }
+    }
+  }
+
+  function fireReminder(todo){
+    if(!todo.reminder) return;
+    // Mark period
+    let period;
+    if(todo.type === 'once') period = (todo.dueDate || today());
+    else if(todo.type === 'daily') period = today();
+    else if(todo.type === 'weekly') period = isoWeek(new Date());
+    else period = currentMonth();
+    todo.reminder.lastFiredPeriod = period;
+    if(todo.type === 'once'){
+      todo.reminder.enabled = false; // one-shot, auto-disable
+      todo.reminder.timeoutId = null;
+    }
+    save();
+    // Visual & audio
+    playNotificationSound();
+    showSystemNotification(todo);
+    showInPageBanner(todo);
+    render();
+  }
+
+  // For catching up missed reminders when the page (re)opens
+  function checkMissedReminders(){
+    const now = Date.now();
+    for(const todo of state.todos){
+      if(!todo.reminder || !todo.reminder.enabled) continue;
+      if(todo.type === 'once'){
+        // Fire if due time has passed (within last 24h) and not yet fired
+        const parts = (todo.reminder.time || '09:00').split(':');
+        const h = Math.max(0, Math.min(23, Number(parts[0]) || 0));
+        const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
+        const ds = todo.dueDate || today();
+        const [y, mo, d] = ds.split('-').map(Number);
+        const t = new Date(y, (mo||1)-1, d||1, h, m, 0, 0);
+        const diff = now - t.getTime();
+        if(t.getTime() <= now && diff < 86400000 && todo.reminder.lastFiredPeriod !== ds){
+          fireReminder(todo);
+        }
+      } else {
+        // For recurring, rescheduling from scratch is enough; setTimeout will fire if soon
+        scheduleReminder(todo);
+      }
+    }
+  }
+
+  // ====== Reminder modal ======
+  let reminderTodoId = null;
+  function openReminderModal(id){
+    const todo = state.todos.find(t => t.id === id);
+    if(!todo) return;
+    reminderTodoId = id;
+    const timeInput = document.getElementById('r-time');
+    const hintText = document.getElementById('r-hint-text');
+    const clearBtn = document.getElementById('r-clear');
+    const permGroup = document.getElementById('r-perm-group');
+    const permText = document.getElementById('r-perm-text');
+
+    if(todo.reminder && todo.reminder.time){
+      timeInput.value = todo.reminder.time;
+      clearBtn.classList.remove('hidden');
+    } else {
+      timeInput.value = '09:00';
+      clearBtn.classList.add('hidden');
+    }
+    hintText.innerHTML = getReminderHint(todo, timeInput.value);
+
+    // Notification permission status
+    if(typeof Notification === 'undefined'){
+      permGroup.hidden = false;
+      permText.textContent = '当前浏览器不支持系统通知 API（将仅播放声音和顶部横幅）';
+    } else if(Notification.permission === 'denied'){
+      permGroup.hidden = false;
+      permText.textContent = '系统通知权限已被拒绝，如需开启请在浏览器偏好中允许本站点通知';
+    } else if(Notification.permission === 'default'){
+      permGroup.hidden = true;
+      // Request lazily when user saves; just initialize Audio on first interaction now
+      getAudioContext();
+    } else {
+      permGroup.hidden = true;
+    }
+
+    document.getElementById('reminder-modal').classList.remove('hidden');
+  }
+  function closeReminderModal(){
+    document.getElementById('reminder-modal').classList.add('hidden');
+    reminderTodoId = null;
+  }
+  function getReminderHint(todo, time){
+    time = time || (todo.reminder && todo.reminder.time) || '09:00';
+    if(todo.type === 'once'){
+      const ds = todo.dueDate || today();
+      return '将在 <b>'+ds+' '+time+'</b> 提醒一次，到点后会自动关闭';
+    }
+    if(todo.type === 'daily')   return '每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
+    if(todo.type === 'weekly')  return '每周 <b>'+wdName(todo.weekDay==null?1:todo.weekDay)+' '+time+'</b> 提醒，完成本周后本周不再响';
+    if(todo.type === 'monthly') return '每月 <b>'+(todo.monthDay||1)+' 日 '+time+'</b> 提醒，完成本月后本月不再响';
+    return '';
+  }
+  function saveReminder(){
+    if(!reminderTodoId) return;
+    const todo = state.todos.find(t => t.id === reminderTodoId);
+    if(!todo) return;
+    const time = document.getElementById('r-time').value;
+    if(!time){ showToast('请选择提醒时间'); return; }
+    const prev = todo.reminder || {};
+    todo.reminder = {
+      enabled: true,
+      time: time,
+      lastFiredPeriod: prev.lastFiredPeriod || null
+    };
+    save();
+    scheduleReminder(todo);
+    render();
+    // Request notification permission (fire-and-forget; user gesture already happened)
+    requestNotifPerm();
+    closeReminderModal();
+    showToast('已设置提醒：'+time);
+  }
+  function clearReminder(){
+    if(!reminderTodoId) return;
+    const todo = state.todos.find(t => t.id === reminderTodoId);
+    if(!todo) return;
+    if(todo.reminder && todo.reminder.timeoutId){
+      clearTimeout(todo.reminder.timeoutId);
+    }
+    todo.reminder = null;
+    save();
+    render();
+    closeReminderModal();
+    showToast('提醒已清除');
   }
 
   // ====== Events ======
@@ -625,6 +1010,15 @@ input,textarea,select{font:inherit;color:inherit}
         del(id);
       }
     });
+    // Re-schedule reminder when a todo's schedule-relevant field is edited
+    ['f-due','f-weekday','f-monthday'].forEach(id => {
+      const el = document.getElementById(id);
+      if(el) el.addEventListener('change', ()=>{
+        if(!editingId) return;
+        const todo = state.todos.find(t => t.id === editingId);
+        if(todo && todo.reminder && todo.reminder.enabled) scheduleReminder(todo);
+      });
+    });
     document.getElementById('export-btn').addEventListener('click', exportData);
     document.getElementById('import-btn').addEventListener('click', ()=>{
       document.getElementById('import-file').click();
@@ -646,6 +1040,7 @@ input,textarea,select{font:inherit;color:inherit}
         const action = actionEl.dataset.action;
         if(action==='toggle') toggle(id);
         else if(action==='edit') openModal(null, id);
+        else if(action==='reminder') openReminderModal(id);
         else if(action==='delete'){
           if(confirm('确定删除这个待办？')) del(id);
         }
@@ -660,9 +1055,28 @@ input,textarea,select{font:inherit;color:inherit}
       });
     });
 
+    // Reminder modal events
+    document.getElementById('reminder-close').addEventListener('click', closeReminderModal);
+    document.getElementById('r-cancel').addEventListener('click', closeReminderModal);
+    document.getElementById('r-save').addEventListener('click', saveReminder);
+    document.getElementById('r-clear').addEventListener('click', clearReminder);
+    document.getElementById('reminder-modal').addEventListener('click', e=>{
+      if(e.target.id==='reminder-modal') closeReminderModal();
+    });
+    document.getElementById('r-time').addEventListener('input', e=>{
+      if(!reminderTodoId) return;
+      const todo = state.todos.find(t => t.id === reminderTodoId);
+      if(todo) document.getElementById('r-hint-text').innerHTML = getReminderHint(todo, e.target.value);
+    });
+
+    // Alert banner
+    document.getElementById('alert-close').addEventListener('click', dismissAlert);
+
     // Global shortcuts
     document.addEventListener('keydown', e=>{
       const modalOpen = !document.getElementById('modal').classList.contains('hidden');
+      const reminderOpen = !document.getElementById('reminder-modal').classList.contains('hidden');
+      if(e.key==='Escape' && reminderOpen){ closeReminderModal(); return; }
       if(e.key==='Escape' && modalOpen){ closeModal(); return; }
       const inField = e.target.matches('input,textarea,select');
       if(!inField && !modalOpen && (e.key==='n'||e.key==='N')){
@@ -673,6 +1087,9 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Init ======
   load(); bind(); render();
+  // Initialize reminders (rebuilds all timeouts from saved state, fires any that were missed)
+  scheduleAllReminders();
+  checkMissedReminders();
 
   // Re-render at midnight to roll daily status
   function scheduleMidnight(){
@@ -684,7 +1101,11 @@ input,textarea,select{font:inherit;color:inherit}
 
   // Re-render when tab becomes visible (in case the day changed)
   document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden) render();
+    if(!document.hidden){
+      render();
+      scheduleAllReminders();
+      checkMissedReminders();
+    }
   });
 })();
 </script>
