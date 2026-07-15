@@ -351,22 +351,73 @@ input,textarea,select{font:inherit;color:inherit}
 (function(){
   'use strict';
   const KEY = 'todo-app-v1';
+  const API_ROOT = location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '';
   let state = { todos: [] };
   let editingId = null;
+  let storageMode = 'local-file';
+  let saveQueue = Promise.resolve();
 
   // ====== Persistence ======
-  function load(){
+  async function load(){
     try{
+      const response = await fetch(API_ROOT+'/api/state', {cache:'no-store'});
+      if(!response.ok) throw new Error('本地数据服务不可用');
+      const stored = await response.json();
       const raw = localStorage.getItem(KEY);
-      if(raw){
-        const parsed = JSON.parse(raw);
-        if(parsed && Array.isArray(parsed.todos)) state = parsed;
+      let browserState = null;
+      try{
+        const parsed = raw ? JSON.parse(raw) : null;
+        if(parsed && Array.isArray(parsed.todos)) browserState = parsed;
+      }catch(e){ /* Ignore an invalid old browser cache. */ }
+
+      // First launch after the upgrade: move old browser data into the local file.
+      if(!stored.exists && browserState){
+        state = {todos: browserState.todos};
+        await persist();
+        localStorage.removeItem(KEY);
+      } else if(Array.isArray(stored.todos)) {
+        state = {todos: stored.todos};
       }
-    }catch(e){console.warn('load failed',e)}
+    }catch(e){
+      // Keep the app usable if someone opens index.html directly instead of using
+      // the desktop app. The desktop launcher always uses the local-file mode.
+      storageMode = 'browser-fallback';
+      try{
+        const raw = localStorage.getItem(KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if(parsed && Array.isArray(parsed.todos)) state = parsed;
+      }catch(err){ console.warn('load failed', err); }
+      console.warn('local file storage unavailable', e);
+    }
   }
   function save(){
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); }
-    catch(e){ showToast('保存失败：' + e.message); }
+    const snapshot = JSON.stringify({version:1, todos:state.todos});
+    saveQueue = saveQueue.then(async () => {
+      if(storageMode === 'browser-fallback'){
+        localStorage.setItem(KEY, snapshot);
+        return;
+      }
+      const response = await fetch(API_ROOT+'/api/state', {
+        method:'PUT',
+        headers:{'Content-Type':'application/json'},
+        body:snapshot
+      });
+      if(!response.ok) throw new Error('本地数据服务不可用');
+    }).catch(e => {
+      storageMode = 'browser-fallback';
+      try{ localStorage.setItem(KEY, snapshot); }
+      catch(err){ showToast('保存失败：' + err.message); }
+      console.warn('save failed', e);
+    });
+  }
+  async function persist(){
+    const snapshot = JSON.stringify({version:1, todos:state.todos});
+    const response = await fetch(API_ROOT+'/api/state', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:snapshot
+    });
+    if(!response.ok) throw new Error('本地数据服务不可用');
   }
 
   // ====== Time helpers ======
@@ -1086,26 +1137,31 @@ input,textarea,select{font:inherit;color:inherit}
   }
 
   // ====== Init ======
-  load(); bind(); render();
-  // Initialize reminders (rebuilds all timeouts from saved state, fires any that were missed)
-  scheduleAllReminders();
-  checkMissedReminders();
-
-  // Re-render at midnight to roll daily status
-  function scheduleMidnight(){
-    const now = new Date();
-    const next = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 30);
-    setTimeout(()=>{ render(); scheduleMidnight(); }, next - now);
-  }
-  scheduleMidnight();
-
-  // Re-render when tab becomes visible (in case the day changed)
-  document.addEventListener('visibilitychange', ()=>{
-    if(!document.hidden){
-      render();
-      scheduleAllReminders();
-      checkMissedReminders();
+  load().then(()=>{
+    bind(); render();
+    if(storageMode === 'browser-fallback'){
+      showToast('本地文件服务未启动，当前使用浏览器临时存储');
     }
+    // Initialize reminders (rebuilds all timeouts from saved state, fires any that were missed)
+    scheduleAllReminders();
+    checkMissedReminders();
+
+    // Re-render at midnight to roll daily status
+    function scheduleMidnight(){
+      const now = new Date();
+      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 30);
+      setTimeout(()=>{ render(); scheduleMidnight(); }, next - now);
+    }
+    scheduleMidnight();
+
+    // Re-render when tab becomes visible (in case the day changed)
+    document.addEventListener('visibilitychange', ()=>{
+      if(!document.hidden){
+        render();
+        scheduleAllReminders();
+        checkMissedReminders();
+      }
+    });
   });
 })();
 </script>
