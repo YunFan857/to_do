@@ -17,6 +17,7 @@
   --daily:#10b981;--daily-soft:#ecfdf5;
   --weekly:#8b5cf6;--weekly-soft:#f5f3ff;
   --monthly:#f59e0b;--monthly-soft:#fffbeb;
+  --annual:#e11d48;--annual-soft:#fff1f2;
   --danger:#ef4444;--danger-soft:#fef2f2;
   --reminder:#f59e0b;--reminder-soft:#fff7ed;
   --radius:18px;--radius-sm:12px;--radius-xs:8px;
@@ -47,7 +48,7 @@ input,textarea,select{font:inherit;color:inherit}
 .stat-card{background:var(--card);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;transition:all var(--t);border:1px solid transparent}
 .stat-card:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 .stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.stat-icon.once{background:var(--once-soft)}.stat-icon.daily{background:var(--daily-soft)}.stat-icon.weekly{background:var(--weekly-soft)}.stat-icon.monthly{background:var(--monthly-soft)}
+.stat-icon.once{background:var(--once-soft)}.stat-icon.daily{background:var(--daily-soft)}.stat-icon.weekly{background:var(--weekly-soft)}.stat-icon.monthly{background:var(--monthly-soft)}.stat-icon.annual{background:var(--annual-soft)}
 .stat-text{display:flex;flex-direction:column;min-width:0}
 .stat-label{font-size:12px;color:var(--text-2);font-weight:500}
 .stat-value{font-size:22px;font-weight:600;color:var(--text-1);line-height:1.2;margin-top:2px}
@@ -60,7 +61,7 @@ input,textarea,select{font:inherit;color:inherit}
 .panel-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}
 .panel-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
 .panel-title .icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.panel-title .icon.once{background:var(--once-soft)}.panel-title .icon.daily{background:var(--daily-soft)}.panel-title .icon.weekly{background:var(--weekly-soft)}.panel-title .icon.monthly{background:var(--monthly-soft)}
+.panel-title .icon.once{background:var(--once-soft)}.panel-title .icon.daily{background:var(--daily-soft)}.panel-title .icon.weekly{background:var(--weekly-soft)}.panel-title .icon.monthly{background:var(--monthly-soft)}.panel-title .icon.annual{background:var(--annual-soft)}
 .panel-count{font-size:11px;font-weight:600;color:var(--text-2);padding:3px 8px;background:var(--card-2);border-radius:999px;border:1px solid var(--border)}
 .panel-actions{display:flex;gap:4px}
 .icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all var(--t);font-size:15px}
@@ -93,6 +94,7 @@ input,textarea,select{font:inherit;color:inherit}
 .badge.daily{background:var(--daily-soft);color:var(--daily)}
 .badge.weekly{background:var(--weekly-soft);color:var(--weekly)}
 .badge.monthly{background:var(--monthly-soft);color:var(--monthly)}
+.badge.annual{background:var(--annual-soft);color:var(--annual)}
 .badge.overdue{background:var(--danger-soft);color:var(--danger)}
 .badge.streak{background:#fff7ed;color:#ea580c}
 .badge.reminder{background:var(--reminder-soft);color:#b45309}
@@ -125,7 +127,7 @@ input,textarea,select{font:inherit;color:inherit}
 .form-group textarea{resize:vertical;min-height:64px;font-family:inherit}
 .form-group.hidden{display:none}
 
-.type-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:4px;background:var(--card-2);border-radius:10px;border:1px solid var(--border)}
+.type-selector{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:4px;background:var(--card-2);border-radius:10px;border:1px solid var(--border)}
 .type-selector input{display:none}
 .type-selector label{margin:0;padding:8px 4px;text-align:center;font-size:12px;border-radius:7px;cursor:pointer;transition:all var(--t);color:var(--text-2);font-weight:500}
 .type-selector label:hover{color:var(--text-1)}
@@ -234,6 +236,20 @@ input,textarea,select{font:inherit;color:inherit}
       </header>
       <div class="cards" id="cards-monthly"></div>
     </section>
+
+    <section class="panel" data-type="annual">
+      <header class="panel-header">
+        <div class="panel-title">
+          <span class="icon annual">🎂</span>
+          每年待办
+          <span class="panel-count" id="count-annual"></span>
+        </div>
+        <div class="panel-actions">
+          <button class="icon-btn add-btn" data-type="annual" title="添加每年待办" aria-label="添加">+</button>
+        </div>
+      </header>
+      <div class="cards" id="cards-annual"></div>
+    </section>
   </div>
 </div>
 
@@ -256,6 +272,8 @@ input,textarea,select{font:inherit;color:inherit}
             <label for="t-weekly">📅 每周</label>
             <input type="radio" name="type" id="t-monthly" value="monthly">
             <label for="t-monthly">🗓️ 每月</label>
+            <input type="radio" name="type" id="t-annual" value="annual">
+            <label for="t-annual">🎂 每年</label>
           </div>
         </div>
 
@@ -290,6 +308,21 @@ input,textarea,select{font:inherit;color:inherit}
         <div class="form-group hidden" data-type="monthly">
           <label for="f-monthday">每月几号<span class="hint">(1-31)</span></label>
           <input type="number" id="f-monthday" name="monthDay" min="1" max="31" value="1">
+        </div>
+
+        <div class="form-group hidden" data-type="annual">
+          <label for="f-year-month">每年日期</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <select id="f-year-month" name="annualMonth" aria-label="月份">
+              <option value="1">1 月</option><option value="2">2 月</option>
+              <option value="3">3 月</option><option value="4">4 月</option>
+              <option value="5">5 月</option><option value="6">6 月</option>
+              <option value="7">7 月</option><option value="8">8 月</option>
+              <option value="9">9 月</option><option value="10">10 月</option>
+              <option value="11">11 月</option><option value="12">12 月</option>
+            </select>
+            <input type="number" id="f-year-day" name="annualDay" min="1" max="31" value="1" aria-label="日期">
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -440,10 +473,23 @@ input,textarea,select{font:inherit;color:inherit}
     const d = new Date();
     return d.getFullYear()+'-'+pad(d.getMonth()+1);
   }
+  function currentYear(){
+    return String(new Date().getFullYear());
+  }
+  function daysInMonth(year, month){
+    return new Date(year, month, 0).getDate();
+  }
+  function annualDate(todo, year){
+    const month = Math.max(1, Math.min(12, Number(todo.annualMonth) || 1));
+    const maxDay = daysInMonth(year, month);
+    const day = Math.max(1, Math.min(maxDay, Number(todo.annualDay) || 1));
+    return new Date(year, month-1, day, 0, 0, 0, 0);
+  }
   function periodKey(t){
     if(t==='daily') return today();
     if(t==='weekly') return isoWeek(new Date());
     if(t==='monthly') return currentMonth();
+    if(t==='annual') return currentYear();
     return null;
   }
   function isDone(todo){
@@ -484,7 +530,7 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Stats ======
   function stats(){
-    const s = {once:{t:0,d:0},daily:{t:0,d:0},weekly:{t:0,d:0},monthly:{t:0,d:0}};
+    const s = {once:{t:0,d:0},daily:{t:0,d:0},weekly:{t:0,d:0},monthly:{t:0,d:0},annual:{t:0,d:0}};
     for(const x of state.todos){
       s[x.type].t++;
       if(isDone(x)) s[x.type].d++;
@@ -495,7 +541,8 @@ input,textarea,select{font:inherit;color:inherit}
     once:   {label:'一次性',     sub:'',           icon:'📌'},
     daily:  {label:'每日待办',   sub:'今日进度',   icon:'☀️'},
     weekly: {label:'每周待办',   sub:'本周进度',   icon:'📅'},
-    monthly:{label:'每月待办',   sub:'本月进度',   icon:'🗓️'}
+    monthly:{label:'每月待办',   sub:'本月进度',   icon:'🗓️'},
+    annual: {label:'每年待办',   sub:'今年进度',   icon:'🎂'}
   };
   function renderOverview(){
     const s = stats();
@@ -504,7 +551,7 @@ input,textarea,select{font:inherit;color:inherit}
                     + '<span class="dot"></span>'+wdName(d.getDay());
     document.getElementById('date').innerHTML = dateStr;
     const ov = document.getElementById('overview');
-    ov.innerHTML = ['once','daily','weekly','monthly'].map(k=>{
+    ov.innerHTML = ['once','daily','weekly','monthly','annual'].map(k=>{
       const m = TYPE_META[k], v = s[k];
       return '<div class="stat-card">'
         + '<div class="stat-icon '+k+'">'+m.icon+'</div>'
@@ -528,6 +575,9 @@ input,textarea,select{font:inherit;color:inherit}
     }
     if(todo.type==='monthly'){
       return '<div class="card-meta"><span class="badge monthly">🗓️ 每月 '+(todo.monthDay||1)+' 日</span></div>';
+    }
+    if(todo.type==='annual'){
+      return '<div class="card-meta"><span class="badge annual">🎂 每年 '+(todo.annualMonth||1)+' 月 '+(todo.annualDay||1)+' 日</span></div>';
     }
     if(todo.type==='daily'){
       const s = dailyStreak(todo);
@@ -572,7 +622,8 @@ input,textarea,select{font:inherit;color:inherit}
     once:   {e:'🌱', t:'还没有一次性待办', tip:'点右上 + 添加一个任务'},
     daily:  {e:'☀️', t:'还没有每日习惯', tip:'加一个好习惯，每天打卡'},
     weekly: {e:'📅', t:'还没有每周计划', tip:'安排一些周节奏的待办'},
-    monthly:{e:'🗓️', t:'还没有每月待办', tip:'比如交房租、复盘…'}
+    monthly:{e:'🗓️', t:'还没有每月待办', tip:'比如交房租、复盘…'},
+    annual: {e:'🎂', t:'还没有每年待办', tip:'比如生日、年检、续费…'}
   };
   function renderSection(type){
     const list = state.todos.filter(t=>t.type===type).sort(sortTodos);
@@ -589,7 +640,7 @@ input,textarea,select{font:inherit;color:inherit}
   }
   function render(){
     renderOverview();
-    ['once','daily','weekly','monthly'].forEach(renderSection);
+    ['once','daily','weekly','monthly','annual'].forEach(renderSection);
   }
 
   // ====== Actions ======
@@ -633,6 +684,8 @@ input,textarea,select{font:inherit;color:inherit}
       form.dueDate.value = t.dueDate || '';
       form.weekDay.value = (t.weekDay!=null?t.weekDay:1);
       form.monthDay.value = t.monthDay || 1;
+      form.annualMonth.value = t.annualMonth || 1;
+      form.annualDay.value = t.annualDay || 1;
     } else {
       titleEl.textContent = '新建待办';
       delBtn.classList.add('hidden');
@@ -641,8 +694,11 @@ input,textarea,select{font:inherit;color:inherit}
       form.dueDate.value = today();
       form.weekDay.value = new Date().getDay();
       form.monthDay.value = new Date().getDate();
+      form.annualMonth.value = new Date().getMonth()+1;
+      form.annualDay.value = new Date().getDate();
     }
     updateTypeFields();
+    updateAnnualDayLimit();
     modal.classList.remove('hidden');
     setTimeout(()=>form.title.focus(),60);
   }
@@ -660,6 +716,15 @@ input,textarea,select{font:inherit;color:inherit}
       g.classList.toggle('hidden', g.dataset.type !== t);
     });
   }
+  function updateAnnualDayLimit(){
+    const monthEl = document.getElementById('f-year-month');
+    const dayEl = document.getElementById('f-year-day');
+    if(!monthEl || !dayEl) return;
+    // 2028 is a leap year, so Feb 29 remains selectable for future years.
+    const max = daysInMonth(2028, Number(monthEl.value) || 1);
+    dayEl.max = max;
+    if(Number(dayEl.value) > max) dayEl.value = max;
+  }
   function saveForm(e){
     e.preventDefault();
     const form = e.target;
@@ -675,10 +740,14 @@ input,textarea,select{font:inherit;color:inherit}
       if(!t) return;
       Object.assign(t, data);
       // clean & set per-type fields
-      delete t.dueDate; delete t.weekDay; delete t.monthDay;
+      delete t.dueDate; delete t.weekDay; delete t.monthDay; delete t.annualMonth; delete t.annualDay;
       if(t.type==='once') t.dueDate = form.dueDate.value || null;
       else if(t.type==='weekly') t.weekDay = Number(form.weekDay.value);
       else if(t.type==='monthly') t.monthDay = Math.max(1, Math.min(31, Number(form.monthDay.value)||1));
+      else if(t.type==='annual'){
+        t.annualMonth = Math.max(1, Math.min(12, Number(form.annualMonth.value)||1));
+        t.annualDay = Math.max(1, Math.min(daysInMonth(2028, t.annualMonth), Number(form.annualDay.value)||1));
+      }
       showToast('已更新');
     } else {
       const t = {
@@ -690,6 +759,10 @@ input,textarea,select{font:inherit;color:inherit}
       if(t.type==='once') t.dueDate = form.dueDate.value || null;
       else if(t.type==='weekly') t.weekDay = Number(form.weekDay.value);
       else if(t.type==='monthly') t.monthDay = Math.max(1, Math.min(31, Number(form.monthDay.value)||1));
+      else if(t.type==='annual'){
+        t.annualMonth = Math.max(1, Math.min(12, Number(form.annualMonth.value)||1));
+        t.annualDay = Math.max(1, Math.min(daysInMonth(2028, t.annualMonth), Number(form.annualDay.value)||1));
+      }
       state.todos.push(t);
       if(t.reminder && t.reminder.enabled) scheduleReminder(t);
       showToast('已添加');
@@ -866,6 +939,16 @@ input,textarea,select{font:inherit;color:inherit}
       if(t <= now) t = new Date(now.getFullYear(), now.getMonth() + 1, target, h, m, 0, 0);
       return t;
     }
+    if(todo.type === 'annual'){
+      if(isDone(todo)) return null;
+      let t = annualDate(todo, now.getFullYear());
+      t.setHours(h, m, 0, 0);
+      if(t <= now || todo.reminder.lastFiredPeriod === currentYear()){
+        t = annualDate(todo, now.getFullYear()+1);
+        t.setHours(h, m, 0, 0);
+      }
+      return t;
+    }
     return null;
   }
 
@@ -914,7 +997,8 @@ input,textarea,select{font:inherit;color:inherit}
     if(todo.type === 'once') period = (todo.dueDate || today());
     else if(todo.type === 'daily') period = today();
     else if(todo.type === 'weekly') period = isoWeek(new Date());
-    else period = currentMonth();
+    else if(todo.type === 'monthly') period = currentMonth();
+    else period = currentYear();
     todo.reminder.lastFiredPeriod = period;
     if(todo.type === 'once'){
       todo.reminder.enabled = false; // one-shot, auto-disable
@@ -1003,6 +1087,7 @@ input,textarea,select{font:inherit;color:inherit}
     if(todo.type === 'daily')   return '每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
     if(todo.type === 'weekly')  return '每周 <b>'+wdName(todo.weekDay==null?1:todo.weekDay)+' '+time+'</b> 提醒，完成本周后本周不再响';
     if(todo.type === 'monthly') return '每月 <b>'+(todo.monthDay||1)+' 日 '+time+'</b> 提醒，完成本月后本月不再响';
+    if(todo.type === 'annual')  return '每年 <b>'+(todo.annualMonth||1)+' 月 '+(todo.annualDay||1)+' 日 '+time+'</b> 提醒，完成今年后今年不再响';
     return '';
   }
   function saveReminder(){
@@ -1062,7 +1147,7 @@ input,textarea,select{font:inherit;color:inherit}
       }
     });
     // Re-schedule reminder when a todo's schedule-relevant field is edited
-    ['f-due','f-weekday','f-monthday'].forEach(id => {
+    ['f-due','f-weekday','f-monthday','f-year-month','f-year-day'].forEach(id => {
       const el = document.getElementById(id);
       if(el) el.addEventListener('change', ()=>{
         if(!editingId) return;
@@ -1070,6 +1155,7 @@ input,textarea,select{font:inherit;color:inherit}
         if(todo && todo.reminder && todo.reminder.enabled) scheduleReminder(todo);
       });
     });
+    document.getElementById('f-year-month').addEventListener('change', updateAnnualDayLimit);
     document.getElementById('export-btn').addEventListener('click', exportData);
     document.getElementById('import-btn').addEventListener('click', ()=>{
       document.getElementById('import-file').click();
