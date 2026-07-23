@@ -36,6 +36,14 @@ input,textarea,select{font:inherit;color:inherit}
 .brand h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
 .brand .date{margin:6px 0 0;color:var(--text-2);font-size:13px;display:flex;align-items:center;gap:8px}
 .brand .date .dot{width:4px;height:4px;border-radius:50%;background:var(--text-3)}
+.timezone-clock{display:flex;align-items:center;gap:14px;padding:9px 13px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm)}
+.timezone-picker{display:flex;flex-direction:column;gap:2px}
+.timezone-label{font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--text-3)}
+.timezone-picker select{border:0;background:transparent;padding:0 18px 0 0;font-size:13px;font-weight:600;color:var(--text-1);cursor:pointer;outline:0}
+.clock-divider{width:1px;height:34px;background:var(--border)}
+.capital-display{display:grid;grid-template-columns:auto auto;column-gap:8px;align-items:baseline;min-width:150px}
+.capital-name{font-size:11px;color:var(--text-2);grid-column:1/-1}
+.capital-time{font-size:20px;font-weight:650;line-height:1.1;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--text-1)}
 .topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
 .btn{padding:8px 14px;border-radius:10px;font-size:13px;font-weight:500;transition:all var(--t);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid transparent}
 .btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 2px rgba(79,70,229,.3)}
@@ -161,7 +169,8 @@ input,textarea,select{font:inherit;color:inherit}
 .alert-banner .alert-progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--reminder);border-radius:0 0 14px 14px;transform-origin:left;animation:autoDismiss 12s linear forwards}
 @keyframes autoDismiss{from{transform:scaleX(1)}to{transform:scaleX(0)}}
 
-@media (max-width:480px){.app{padding:20px 14px 60px}.brand h1{font-size:24px}.stat-value{font-size:18px}.panel-header{padding:14px}.cards{padding:10px}}
+@media (max-width:760px){.timezone-clock{order:3;width:100%;justify-content:space-between}.capital-display{min-width:0}}
+@media (max-width:480px){.app{padding:20px 14px 60px}.brand h1{font-size:24px}.stat-value{font-size:18px}.panel-header{padding:14px}.cards{padding:10px}.timezone-clock{padding:9px 11px}.capital-time{font-size:18px}}
 </style>
 </head>
 <body>
@@ -170,6 +179,20 @@ input,textarea,select{font:inherit;color:inherit}
     <div class="brand">
       <h1>📝 我的待办</h1>
       <p class="date" id="date"></p>
+    </div>
+    <div class="timezone-clock" aria-label="首都时间">
+      <label class="timezone-picker" for="timezone-select">
+        <span class="timezone-label">时区时间</span>
+        <select id="timezone-select" aria-label="选择国家时区">
+          <option value="china">🇨🇳 中国</option>
+          <option value="usa">🇺🇸 美国</option>
+        </select>
+      </label>
+      <span class="clock-divider" aria-hidden="true"></span>
+      <div class="capital-display">
+        <span class="capital-name" id="capital-name">中国 · 北京</span>
+        <time class="capital-time" id="capital-time">--:--:--</time>
+      </div>
     </div>
     <div class="topbar-actions">
       <button class="btn btn-primary" id="new-btn">+ 新建待办</button>
@@ -343,7 +366,7 @@ input,textarea,select{font:inherit;color:inherit}
     </div>
     <div class="modal-body">
       <div class="form-group">
-        <label for="r-time">提醒时间 <span class="hint">(每天到这个时间会响)</span></label>
+        <label for="r-time">提醒时间 <span class="hint" id="r-timezone-label">（按北京时间）</span></label>
         <input type="time" id="r-time" value="09:00">
       </div>
       <div class="reminder-hint" id="r-hint">
@@ -384,11 +407,20 @@ input,textarea,select{font:inherit;color:inherit}
 (function(){
   'use strict';
   const KEY = 'todo-app-v1';
+  const TIMEZONE_KEY = 'todo-timezone-v1';
+  const TIMEZONES = {
+    china: { country:'中国', capital:'北京', timeZone:'Asia/Shanghai' },
+    usa:   { country:'美国', capital:'华盛顿特区', timeZone:'America/New_York' }
+  };
+  const ZONED_FORMATTERS = {};
+  const MAX_TIMER_DELAY = 2147480000;
   const API_ROOT = location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '';
   let state = { todos: [] };
   let editingId = null;
   let storageMode = 'local-file';
   let saveQueue = Promise.resolve();
+  let selectedTimezone = loadTimezonePreference();
+  let renderedDateKey = null;
 
   // ====== Persistence ======
   async function load(){
@@ -455,35 +487,125 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Time helpers ======
   function pad(n){return n<10?'0'+n:n}
-  function today(){
-    const d = new Date();
-    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  function loadTimezonePreference(){
+    try{
+      const saved = localStorage.getItem(TIMEZONE_KEY);
+      return TIMEZONES[saved] ? saved : 'china';
+    }catch(e){ return 'china'; }
+  }
+  function saveTimezonePreference(){
+    try{ localStorage.setItem(TIMEZONE_KEY, selectedTimezone); }
+    catch(e){ /* The clock still works when browser storage is unavailable. */ }
+  }
+  function activeTimezone(){
+    return TIMEZONES[selectedTimezone] || TIMEZONES.china;
+  }
+  function getZonedParts(date, timeZone){
+    if(!ZONED_FORMATTERS[timeZone]){
+      ZONED_FORMATTERS[timeZone] = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timeZone,
+        calendar:'gregory', numberingSystem:'latn',
+        year:'numeric', month:'2-digit', day:'2-digit',
+        hour:'2-digit', minute:'2-digit', second:'2-digit', hourCycle:'h23'
+      });
+    }
+    const values = {};
+    ZONED_FORMATTERS[timeZone].formatToParts(date).forEach(part=>{
+      if(part.type !== 'literal') values[part.type] = Number(part.value);
+    });
+    if(values.hour===24) values.hour = 0;
+    values.weekday = new Date(Date.UTC(values.year, values.month-1, values.day)).getUTCDay();
+    return values;
+  }
+  function zonedNowParts(date){
+    return getZonedParts(date || new Date(), activeTimezone().timeZone);
+  }
+  function wallDateKey(parts){
+    return parts.year+'-'+pad(parts.month)+'-'+pad(parts.day);
+  }
+  function addWallDays(parts, amount){
+    const date = new Date(Date.UTC(parts.year, parts.month-1, parts.day+amount));
+    return {
+      year:date.getUTCFullYear(), month:date.getUTCMonth()+1,
+      day:date.getUTCDate(), weekday:date.getUTCDay()
+    };
+  }
+  function shiftedMonth(parts, amount){
+    const date = new Date(Date.UTC(parts.year, parts.month-1+amount, 1));
+    return {year:date.getUTCFullYear(), month:date.getUTCMonth()+1, day:1};
+  }
+  function timeZoneOffsetMs(date, timeZone){
+    const parts = getZonedParts(date, timeZone);
+    const displayedAsUtc = Date.UTC(parts.year, parts.month-1, parts.day, parts.hour, parts.minute, parts.second);
+    return displayedAsUtc - (date.getTime()-date.getMilliseconds());
+  }
+  function sameWallTime(date, target, timeZone){
+    const parts = getZonedParts(date, timeZone);
+    return parts.year===target.year && parts.month===target.month && parts.day===target.day
+      && parts.hour===target.hour && parts.minute===target.minute && parts.second===target.second;
+  }
+  function zonedDateTimeToDate(year, month, day, hour, minute, second){
+    const timeZone = activeTimezone().timeZone;
+    const target = {year:year, month:month, day:day, hour:hour||0, minute:minute||0, second:second||0};
+    const wallAsUtc = Date.UTC(target.year, target.month-1, target.day, target.hour, target.minute, target.second);
+    const beforeOffset = timeZoneOffsetMs(new Date(wallAsUtc-43200000), timeZone);
+    const afterOffset = timeZoneOffsetMs(new Date(wallAsUtc+43200000), timeZone);
+    const candidates = Array.from(new Set([beforeOffset, afterOffset]))
+      .map(offset=>new Date(wallAsUtc-offset))
+      .filter(date=>sameWallTime(date, target, timeZone))
+      .sort((a,b)=>a-b);
+    if(candidates.length) return candidates[0];
+    // A skipped wall time during the spring DST jump fires at the first valid
+    // equivalent after the gap (for example, 02:30 becomes 03:30).
+    return new Date(wallAsUtc-beforeOffset);
+  }
+  function updateCapitalClock(){
+    const config = activeTimezone();
+    const now = new Date();
+    const values = getZonedParts(now, config.timeZone);
+
+    const capitalName = document.getElementById('capital-name');
+    const capitalTime = document.getElementById('capital-time');
+    const date = document.getElementById('date');
+    if(capitalName) capitalName.textContent = config.country+' · '+config.capital;
+    if(capitalTime){
+      capitalTime.textContent = pad(values.hour)+':'+pad(values.minute)+':'+pad(values.second);
+      capitalTime.dateTime = now.toISOString();
+      capitalTime.setAttribute('aria-label', config.capital+'当前时间 '+values.hour+'点'+values.minute+'分'+values.second+'秒');
+      capitalTime.title = config.capital+'时间（'+config.timeZone+'）';
+    }
+    if(date) date.textContent = values.year+'年'+values.month+'月'+values.day+'日 · '+wdName(values.weekday);
+  }
+  function today(date){
+    return wallDateKey(zonedNowParts(date));
   }
   function isoWeek(d){
-    const t = new Date(d.getFullYear(),d.getMonth(),d.getDate());
-    const dayNr = (t.getDay()+6)%7;
-    t.setDate(t.getDate()-dayNr+3);
+    const parts = zonedNowParts(d);
+    const t = new Date(Date.UTC(parts.year,parts.month-1,parts.day));
+    const dayNr = (t.getUTCDay()+6)%7;
+    t.setUTCDate(t.getUTCDate()-dayNr+3);
     const firstThu = t.valueOf();
-    t.setMonth(0,1);
-    if(t.getDay()!==4) t.setMonth(0,1+((4-t.getDay())+7)%7);
+    const isoYear = t.getUTCFullYear();
+    t.setUTCMonth(0,1);
+    if(t.getUTCDay()!==4) t.setUTCMonth(0,1+((4-t.getUTCDay())+7)%7);
     const w = 1+Math.ceil((firstThu-t)/604800000);
-    return d.getFullYear()+'-W'+pad(w);
+    return isoYear+'-W'+pad(w);
   }
-  function currentMonth(){
-    const d = new Date();
-    return d.getFullYear()+'-'+pad(d.getMonth()+1);
+  function currentMonth(date){
+    const parts = zonedNowParts(date);
+    return parts.year+'-'+pad(parts.month);
   }
-  function currentYear(){
-    return String(new Date().getFullYear());
+  function currentYear(date){
+    return String(zonedNowParts(date).year);
   }
   function daysInMonth(year, month){
-    return new Date(year, month, 0).getDate();
+    return new Date(Date.UTC(year, month, 0)).getUTCDate();
   }
-  function annualDate(todo, year){
+  function annualDate(todo, year, hour, minute){
     const month = Math.max(1, Math.min(12, Number(todo.annualMonth) || 1));
     const maxDay = daysInMonth(year, month);
     const day = Math.max(1, Math.min(maxDay, Number(todo.annualDay) || 1));
-    return new Date(year, month-1, day, 0, 0, 0, 0);
+    return zonedDateTimeToDate(year, month, day, hour||0, minute||0, 0);
   }
   function periodKey(t){
     if(t==='daily') return today();
@@ -502,9 +624,9 @@ input,textarea,select{font:inherit;color:inherit}
 
   function friendlyDate(s){
     if(!s) return '';
-    const d = new Date(s+'T00:00:00');
+    const d = new Date(s+'T00:00:00Z');
     if(isNaN(d)) return s;
-    const td = new Date(today()+'T00:00:00');
+    const td = new Date(today()+'T00:00:00Z');
     const diff = Math.round((d-td)/86400000);
     if(diff===0) return '今天';
     if(diff===1) return '明天';
@@ -519,10 +641,11 @@ input,textarea,select{font:inherit;color:inherit}
   function dailyStreak(todo){
     if(todo.type!=='daily' || !todo.completions) return 0;
     let n = 0;
-    const d = new Date();
+    const parts = zonedNowParts();
+    const d = new Date(Date.UTC(parts.year, parts.month-1, parts.day));
     for(;;){
-      const key = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
-      if(todo.completions[key]){ n++; d.setDate(d.getDate()-1); }
+      const key = d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());
+      if(todo.completions[key]){ n++; d.setUTCDate(d.getUTCDate()-1); }
       else break;
     }
     return n;
@@ -546,10 +669,6 @@ input,textarea,select{font:inherit;color:inherit}
   };
   function renderOverview(){
     const s = stats();
-    const d = new Date();
-    const dateStr = (d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日')
-                    + '<span class="dot"></span>'+wdName(d.getDay());
-    document.getElementById('date').innerHTML = dateStr;
     const ov = document.getElementById('overview');
     ov.innerHTML = ['once','daily','weekly','monthly','annual'].map(k=>{
       const m = TYPE_META[k], v = s[k];
@@ -587,7 +706,7 @@ input,textarea,select{font:inherit;color:inherit}
   }
   function reminderBadgeHTML(todo){
     if(!todo.reminder || !todo.reminder.enabled) return '';
-    return '<span class="badge reminder">🔔 '+todo.reminder.time+'</span>';
+    return '<span class="badge reminder">🔔 '+todo.reminder.time+' · '+esc(activeTimezone().capital)+'</span>';
   }
   function cardHTML(todo){
     const done = isDone(todo);
@@ -601,7 +720,7 @@ input,textarea,select{font:inherit;color:inherit}
       +   (hasR ? '<div class="card-meta">'+reminderBadgeHTML(todo)+'</div>' : '')
       + '</div>'
       + '<div class="card-actions">'
-      +   '<button class="icon-btn'+(hasR?' reminder-on':'')+'" data-action="reminder" title="'+(hasR?'提醒 '+todo.reminder.time+'（点击修改）':'设置提醒')+'" aria-label="提醒">'+(hasR?'🔔':'🔕')+'</button>'
+      +   '<button class="icon-btn'+(hasR?' reminder-on':'')+'" data-action="reminder" title="'+(hasR?activeTimezone().capital+'时间 '+todo.reminder.time+'（点击修改）':'设置提醒')+'" aria-label="提醒">'+(hasR?'🔔':'🔕')+'</button>'
       +   '<button class="icon-btn" data-action="edit" title="编辑" aria-label="编辑">✎</button>'
       +   '<button class="icon-btn danger" data-action="delete" title="删除" aria-label="删除">🗑</button>'
       + '</div></div>';
@@ -691,11 +810,12 @@ input,textarea,select{font:inherit;color:inherit}
       delBtn.classList.add('hidden');
       form.reset();
       form.querySelector('input[name="type"][value="'+type+'"]').checked = true;
+      const nowParts = zonedNowParts();
       form.dueDate.value = today();
-      form.weekDay.value = new Date().getDay();
-      form.monthDay.value = new Date().getDate();
-      form.annualMonth.value = new Date().getMonth()+1;
-      form.annualDay.value = new Date().getDate();
+      form.weekDay.value = nowParts.weekday;
+      form.monthDay.value = nowParts.day;
+      form.annualMonth.value = nowParts.month;
+      form.annualDay.value = nowParts.day;
     }
     updateTypeFields();
     updateAnnualDayLimit();
@@ -905,49 +1025,54 @@ input,textarea,select{font:inherit;color:inherit}
     const h = Math.max(0, Math.min(23, Number(parts[0]) || 0));
     const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
     const now = new Date();
+    const nowParts = zonedNowParts(now);
 
     if(todo.type === 'once'){
       const ds = todo.dueDate || today();
       const [y, mo, d] = ds.split('-').map(Number);
-      const t = new Date(y, (mo||1)-1, d||1, h, m, 0, 0);
+      const t = zonedDateTimeToDate(y, mo||1, d||1, h, m, 0);
       if(t < now) return null; // past
       if(todo.reminder.lastFiredPeriod === ds) return null; // already fired
       return t;
     }
     if(todo.type === 'daily'){
-      // Skip if today's slot already completed
-      if(isDone(todo)) return null;
-      let t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
-      if(t <= now || todo.reminder.lastFiredPeriod === today()){
-        t.setDate(t.getDate() + 1);
+      let targetParts = nowParts;
+      let target = zonedDateTimeToDate(targetParts.year, targetParts.month, targetParts.day, h, m, 0);
+      if(isDone(todo) || target <= now || todo.reminder.lastFiredPeriod === today(now)){
+        targetParts = addWallDays(targetParts, 1);
+        target = zonedDateTimeToDate(targetParts.year, targetParts.month, targetParts.day, h, m, 0);
       }
-      return t;
+      return target;
     }
     if(todo.type === 'weekly'){
-      if(isDone(todo)) return null;
       const targetDay = (todo.weekDay == null ? 1 : todo.weekDay);
-      let t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0, 0);
-      let diff = (targetDay - t.getDay() + 7) % 7;
-      if(diff === 0 && t <= now) diff = 7;
-      t.setDate(t.getDate() + diff);
-      return t;
+      let diff = (targetDay - nowParts.weekday + 7) % 7;
+      let targetParts = addWallDays(nowParts, diff);
+      let target = zonedDateTimeToDate(targetParts.year, targetParts.month, targetParts.day, h, m, 0);
+      if(isDone(todo) || target <= now || todo.reminder.lastFiredPeriod === isoWeek(now)){
+        targetParts = addWallDays(targetParts, 7);
+        target = zonedDateTimeToDate(targetParts.year, targetParts.month, targetParts.day, h, m, 0);
+      }
+      return target;
     }
     if(todo.type === 'monthly'){
-      if(isDone(todo)) return null;
-      const target = Math.max(1, Math.min(28, Number(todo.monthDay) || 1));
-      let t = new Date(now.getFullYear(), now.getMonth(), target, h, m, 0, 0);
-      if(t <= now) t = new Date(now.getFullYear(), now.getMonth() + 1, target, h, m, 0, 0);
-      return t;
+      const targetDay = Math.max(1, Math.min(31, Number(todo.monthDay) || 1));
+      let monthParts = nowParts;
+      let day = Math.min(targetDay, daysInMonth(monthParts.year, monthParts.month));
+      let target = zonedDateTimeToDate(monthParts.year, monthParts.month, day, h, m, 0);
+      if(isDone(todo) || target <= now || todo.reminder.lastFiredPeriod === currentMonth(now)){
+        monthParts = shiftedMonth(monthParts, 1);
+        day = Math.min(targetDay, daysInMonth(monthParts.year, monthParts.month));
+        target = zonedDateTimeToDate(monthParts.year, monthParts.month, day, h, m, 0);
+      }
+      return target;
     }
     if(todo.type === 'annual'){
-      if(isDone(todo)) return null;
-      let t = annualDate(todo, now.getFullYear());
-      t.setHours(h, m, 0, 0);
-      if(t <= now || todo.reminder.lastFiredPeriod === currentYear()){
-        t = annualDate(todo, now.getFullYear()+1);
-        t.setHours(h, m, 0, 0);
+      let target = annualDate(todo, nowParts.year, h, m);
+      if(isDone(todo) || target <= now || todo.reminder.lastFiredPeriod === currentYear(now)){
+        target = annualDate(todo, nowParts.year+1, h, m);
       }
-      return t;
+      return target;
     }
     return null;
   }
@@ -962,6 +1087,10 @@ input,textarea,select{font:inherit;color:inherit}
     if(!next) return;
     const delay = next.getTime() - Date.now();
     if(delay <= 0) return;
+    if(delay > MAX_TIMER_DELAY){
+      todo.reminder.timeoutId = setTimeout(()=>scheduleReminder(todo), MAX_TIMER_DELAY);
+      return;
+    }
     todo.reminder.timeoutId = setTimeout(() => {
       todo.reminder.timeoutId = null;
       fireReminder(todo);
@@ -1024,7 +1153,7 @@ input,textarea,select{font:inherit;color:inherit}
         const m = Math.max(0, Math.min(59, Number(parts[1]) || 0));
         const ds = todo.dueDate || today();
         const [y, mo, d] = ds.split('-').map(Number);
-        const t = new Date(y, (mo||1)-1, d||1, h, m, 0, 0);
+        const t = zonedDateTimeToDate(y, mo||1, d||1, h, m, 0);
         const diff = now - t.getTime();
         if(t.getTime() <= now && diff < 86400000 && todo.reminder.lastFiredPeriod !== ds){
           fireReminder(todo);
@@ -1047,6 +1176,7 @@ input,textarea,select{font:inherit;color:inherit}
     const clearBtn = document.getElementById('r-clear');
     const permGroup = document.getElementById('r-perm-group');
     const permText = document.getElementById('r-perm-text');
+    document.getElementById('r-timezone-label').textContent = '（按'+activeTimezone().capital+'时间）';
 
     if(todo.reminder && todo.reminder.time){
       timeInput.value = todo.reminder.time;
@@ -1080,14 +1210,15 @@ input,textarea,select{font:inherit;color:inherit}
   }
   function getReminderHint(todo, time){
     time = time || (todo.reminder && todo.reminder.time) || '09:00';
+    const zone = activeTimezone().capital+'时间';
     if(todo.type === 'once'){
       const ds = todo.dueDate || today();
-      return '将在 <b>'+ds+' '+time+'</b> 提醒一次，到点后会自动关闭';
+      return '按 <b>'+zone+'</b>，将在 <b>'+ds+' '+time+'</b> 提醒一次，到点后会自动关闭';
     }
-    if(todo.type === 'daily')   return '每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
-    if(todo.type === 'weekly')  return '每周 <b>'+wdName(todo.weekDay==null?1:todo.weekDay)+' '+time+'</b> 提醒，完成本周后本周不再响';
-    if(todo.type === 'monthly') return '每月 <b>'+(todo.monthDay||1)+' 日 '+time+'</b> 提醒，完成本月后本月不再响';
-    if(todo.type === 'annual')  return '每年 <b>'+(todo.annualMonth||1)+' 月 '+(todo.annualDay||1)+' 日 '+time+'</b> 提醒，完成今年后今年不再响';
+    if(todo.type === 'daily')   return '按 <b>'+zone+'</b>，每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
+    if(todo.type === 'weekly')  return '按 <b>'+zone+'</b>，每周 <b>'+wdName(todo.weekDay==null?1:todo.weekDay)+' '+time+'</b> 提醒，完成本周后本周不再响';
+    if(todo.type === 'monthly') return '按 <b>'+zone+'</b>，每月 <b>'+(todo.monthDay||1)+' 日 '+time+'</b> 提醒，完成本月后本月不再响';
+    if(todo.type === 'annual')  return '按 <b>'+zone+'</b>，每年 <b>'+(todo.annualMonth||1)+' 月 '+(todo.annualDay||1)+' 日 '+time+'</b> 提醒，完成今年后今年不再响';
     return '';
   }
   function saveReminder(){
@@ -1108,7 +1239,7 @@ input,textarea,select{font:inherit;color:inherit}
     // Request notification permission (fire-and-forget; user gesture already happened)
     requestNotifPerm();
     closeReminderModal();
-    showToast('已设置提醒：'+time);
+    showToast('已设置提醒：'+activeTimezone().capital+'时间 '+time);
   }
   function clearReminder(){
     if(!reminderTodoId) return;
@@ -1126,6 +1257,18 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Events ======
   function bind(){
+    const timezoneSelect = document.getElementById('timezone-select');
+    timezoneSelect.value = selectedTimezone;
+    timezoneSelect.addEventListener('change', e=>{
+      selectedTimezone = TIMEZONES[e.target.value] ? e.target.value : 'china';
+      saveTimezonePreference();
+      updateCapitalClock();
+      renderedDateKey = today();
+      render();
+      scheduleAllReminders();
+      checkMissedReminders();
+      showToast('已切换至'+activeTimezone().capital+'时间，提醒已重新排程');
+    });
     document.getElementById('new-btn').addEventListener('click', ()=>openModal('once'));
     document.querySelectorAll('.add-btn').forEach(b=>{
       b.addEventListener('click', ()=>openModal(b.dataset.type));
@@ -1223,6 +1366,8 @@ input,textarea,select{font:inherit;color:inherit}
   }
 
   // ====== Init ======
+  updateCapitalClock();
+  setInterval(updateCapitalClock, 1000);
   load().then(()=>{
     bind(); render();
     if(storageMode === 'browser-fallback'){
@@ -1232,17 +1377,22 @@ input,textarea,select{font:inherit;color:inherit}
     scheduleAllReminders();
     checkMissedReminders();
 
-    // Re-render at midnight to roll daily status
-    function scheduleMidnight(){
-      const now = new Date();
-      const next = new Date(now.getFullYear(), now.getMonth(), now.getDate()+1, 0, 0, 30);
-      setTimeout(()=>{ render(); scheduleMidnight(); }, next - now);
-    }
-    scheduleMidnight();
+    // Follow midnight in the selected timezone, even after the timezone changes.
+    renderedDateKey = today();
+    setInterval(()=>{
+      const nextDateKey = today();
+      if(nextDateKey !== renderedDateKey){
+        renderedDateKey = nextDateKey;
+        render();
+        scheduleAllReminders();
+        checkMissedReminders();
+      }
+    }, 30000);
 
     // Re-render when tab becomes visible (in case the day changed)
     document.addEventListener('visibilitychange', ()=>{
       if(!document.hidden){
+        updateCapitalClock();
         render();
         scheduleAllReminders();
         checkMissedReminders();
