@@ -18,6 +18,7 @@
   --weekly:#8b5cf6;--weekly-soft:#f5f3ff;
   --monthly:#f59e0b;--monthly-soft:#fffbeb;
   --annual:#e11d48;--annual-soft:#fff1f2;
+  --progress:#0f766e;--progress-hover:#115e59;--progress-soft:#f0fdfa;
   --danger:#ef4444;--danger-soft:#fef2f2;
   --reminder:#f59e0b;--reminder-soft:#fff7ed;
   --radius:18px;--radius-sm:12px;--radius-xs:8px;
@@ -29,6 +30,7 @@
 html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.55;color:var(--text-1);background:linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 100%) fixed;min-height:100vh;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer;border:0;background:0 0;color:inherit;padding:0}
 input,textarea,select{font:inherit;color:inherit}
+.hidden{display:none!important}
 .app{max-width:1200px;margin:0 auto;padding:36px 24px 80px}
 
 /* Topbar */
@@ -113,6 +115,62 @@ input,textarea,select{font:inherit;color:inherit}
 .empty{padding:36px 20px;text-align:center;color:var(--text-3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .empty-emoji{font-size:30px;opacity:.6}
 .empty-tip{font-size:11px;color:var(--text-3);opacity:.7}
+
+/* Project progress timer */
+.project-tracker{margin-top:18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
+.project-header{padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border)}
+.project-heading{display:flex;align-items:center;gap:11px;min-width:0}
+.project-heading-icon{width:34px;height:34px;border-radius:10px;background:var(--progress-soft);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.project-heading-text{min-width:0}
+.project-heading-title{font-size:16px;font-weight:650;color:var(--text-1)}
+.project-heading-subtitle{font-size:12px;color:var(--text-3);margin-top:1px}
+.project-header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn-progress{background:var(--progress);color:#fff;box-shadow:0 1px 2px rgba(15,118,110,.28)}
+.btn-progress:hover{background:var(--progress-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.24)}
+.project-body{padding:16px}
+.project-empty{min-height:190px;border:1px dashed var(--border-strong);border-radius:14px;background:linear-gradient(135deg,#fbfefd 0%,var(--progress-soft) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;color:var(--text-2)}
+.project-empty-icon{font-size:34px;margin-bottom:8px}
+.project-empty-title{font-size:15px;font-weight:600;color:var(--text-1);margin-bottom:4px}
+.project-empty-copy{font-size:12px;color:var(--text-3);max-width:360px;margin-bottom:16px}
+.project-list{display:flex;flex-direction:column;gap:16px}
+.project-record{border:1px solid var(--border);border-radius:15px;background:var(--card);overflow:hidden;box-shadow:var(--shadow-sm)}
+.project-record-header{padding:14px 15px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card-2);border-bottom:1px solid var(--border)}
+.project-record-title{display:flex;align-items:center;gap:10px;min-width:0}
+.project-record-index{width:27px;height:27px;border-radius:8px;background:var(--progress-soft);color:var(--progress);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.project-record-name{font-size:15px;font-weight:650;color:var(--text-1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.project-card-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.project-card-actions .btn{padding:6px 10px;font-size:12px}
+.project-record-body{padding:14px}
+.timeline-section{border:1px solid var(--border);border-radius:13px;background:var(--card-2);overflow:hidden}
+.timeline-title{font-size:14px;font-weight:650;color:var(--text-1)}
+.timeline-caption{font-size:11px;color:var(--text-3)}
+.timeline-bar{padding:11px 13px 0;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.timeline-scroll{overflow-x:auto;overscroll-behavior-inline:contain;padding:0 4px 9px;scrollbar-color:var(--border-strong) transparent;scrollbar-width:thin}
+.timeline-scroll::-webkit-scrollbar{height:7px}.timeline-scroll::-webkit-scrollbar-track{background:transparent}.timeline-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}.timeline-scroll::-webkit-scrollbar-thumb:hover{background:var(--border-strong)}
+.timeline-track{display:flex;align-items:flex-start;min-width:max-content;padding:10px 13px 8px}
+.timeline-point{width:180px;flex:0 0 180px;text-align:center;position:relative}
+.timeline-date{height:22px;font-size:11px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.timeline-marker{width:15px;height:15px;border-radius:50%;margin:0 auto 11px;background:var(--card);border:3px solid var(--progress);position:relative;z-index:1;box-shadow:0 0 0 4px var(--progress-soft)}
+.timeline-point.start .timeline-marker{background:var(--progress)}
+.timeline-point.today .timeline-marker{border-color:var(--primary);box-shadow:0 0 0 4px var(--primary-soft)}
+.timeline-card{height:104px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:10px 11px;display:flex;align-items:flex-start;justify-content:space-between;gap:7px;text-align:left;transition:all var(--t);overflow:hidden}
+.timeline-point.node .timeline-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-sm)}
+.timeline-card-main{min-width:0;flex:1}
+.timeline-kicker{font-size:10px;color:var(--progress);font-weight:650;margin-bottom:4px}
+.timeline-point.today .timeline-kicker{color:var(--primary)}
+.timeline-node-title{font-size:12px;font-weight:600;color:var(--text-1);word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.timeline-start-progress{display:flex;flex-direction:column;gap:1px;margin-top:6px;font-size:10px;color:var(--text-2);font-variant-numeric:tabular-nums}
+.timeline-start-progress strong{font-size:12px;color:var(--progress);font-weight:700}
+.timeline-node-desc{font-size:11px;color:var(--text-2);margin-top:3px;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.timeline-actions{display:flex;flex-direction:column;gap:1px;opacity:0;transition:opacity var(--t);flex-shrink:0}
+.timeline-card:hover .timeline-actions,.timeline-card:focus-within .timeline-actions{opacity:1}
+.timeline-actions .icon-btn{width:23px;height:23px;font-size:11px}
+.timeline-connector{width:112px;flex:0 0 112px;position:relative;height:48px;margin-top:22px}
+.timeline-connector::before{content:'';position:absolute;left:-83px;right:-83px;top:7px;height:2px;background:var(--border-strong)}
+.timeline-gap{position:absolute;left:50%;top:16px;transform:translateX(-50%);padding:2px 7px;border-radius:999px;background:var(--progress-soft);color:var(--progress);font-size:10px;font-weight:650;white-space:nowrap;z-index:2}
+.timeline-connector.today .timeline-gap{background:var(--primary-soft);color:var(--primary)}
+.timeline-swipe-tip{display:none;color:var(--text-3);font-size:10px}
+@media (max-width:600px){.project-header{align-items:flex-start}.project-heading-subtitle{display:none}.project-header-actions{flex-shrink:0}.project-header-actions .btn{padding:8px 10px}.project-body{padding:11px}.project-record-header{align-items:flex-start}.project-card-actions{flex-wrap:wrap;justify-content:flex-end}.project-card-actions .btn{padding:5px 8px}.project-record-body{padding:10px}.timeline-point{width:160px;flex-basis:160px}.timeline-connector{width:90px;flex-basis:90px}.timeline-connector::before{left:-72px;right:-72px}.timeline-actions{opacity:1}.timeline-caption{display:none}.timeline-swipe-tip{display:block}}
 
 /* Modal */
 .modal{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn 180ms ease-out}
@@ -274,6 +332,22 @@ input,textarea,select{font:inherit;color:inherit}
       <div class="cards" id="cards-annual"></div>
     </section>
   </div>
+
+  <section class="project-tracker" aria-labelledby="project-tracker-title">
+    <header class="project-header">
+      <div class="project-heading">
+        <span class="project-heading-icon" aria-hidden="true">⏱️</span>
+        <div class="project-heading-text">
+          <div class="project-heading-title" id="project-tracker-title">项目正计时</div>
+          <div class="project-heading-subtitle">同时记录多个项目的持续时间和阶段进展</div>
+        </div>
+      </div>
+      <div class="project-header-actions">
+        <button class="btn btn-progress" id="project-add-btn">+ 新增项目</button>
+      </div>
+    </header>
+    <div class="project-body" id="project-content"></div>
+  </section>
 </div>
 
 <div class="modal hidden" id="modal">
@@ -357,6 +431,64 @@ input,textarea,select{font:inherit;color:inherit}
   </div>
 </div>
 
+<!-- Project timer settings -->
+<div class="modal hidden" id="project-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="project-modal-title">新增计时项目</h2>
+      <button class="icon-btn" id="project-modal-close" aria-label="关闭">✕</button>
+    </div>
+    <form id="project-form" autocomplete="off">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="project-name">项目名称<span class="req">*</span></label>
+          <input type="text" id="project-name" name="projectName" required maxlength="80" placeholder="例如：上线第一个独立产品">
+        </div>
+        <div class="form-group">
+          <label for="project-start-date">开始日期<span class="req">*</span></label>
+          <input type="date" id="project-start-date" name="projectStartDate" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger hidden" id="project-delete-btn">删除项目记录</button>
+        <button type="button" class="btn btn-ghost" id="project-cancel-btn">取消</button>
+        <button type="submit" class="btn btn-progress">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Progress milestone editor -->
+<div class="modal hidden" id="milestone-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="milestone-modal-title">添加进展节点</h2>
+      <button class="icon-btn" id="milestone-modal-close" aria-label="关闭">✕</button>
+    </div>
+    <form id="milestone-form" autocomplete="off">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="milestone-title">节点名称<span class="req">*</span></label>
+          <input type="text" id="milestone-title" name="milestoneTitle" required maxlength="80" placeholder="例如：完成第一版原型">
+        </div>
+        <div class="form-group">
+          <label for="milestone-date">标记日期<span class="req">*</span></label>
+          <input type="date" id="milestone-date" name="milestoneDate" required>
+        </div>
+        <div class="form-group">
+          <label for="milestone-description">进展说明<span class="hint">(可选)</span></label>
+          <textarea id="milestone-description" name="milestoneDescription" maxlength="300" placeholder="记录这个阶段完成了什么…"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger hidden" id="milestone-delete-btn">删除节点</button>
+        <button type="button" class="btn btn-ghost" id="milestone-cancel-btn">取消</button>
+        <button type="submit" class="btn btn-progress">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Reminder config modal -->
 <div class="modal hidden" id="reminder-modal">
   <div class="modal-content reminder-modal">
@@ -407,6 +539,7 @@ input,textarea,select{font:inherit;color:inherit}
 (function(){
   'use strict';
   const KEY = 'todo-app-v1';
+  const PENDING_SYNC_KEY = 'todo-pending-file-sync-v1';
   const TIMEZONE_KEY = 'todo-timezone-v1';
   const TIMEZONES = {
     china: { country:'中国', capital:'北京', timeZone:'Asia/Shanghai' },
@@ -415,33 +548,89 @@ input,textarea,select{font:inherit;color:inherit}
   const ZONED_FORMATTERS = {};
   const MAX_TIMER_DELAY = 2147480000;
   const API_ROOT = location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '';
-  let state = { todos: [] };
+  let state = { todos: [], projects: [] };
   let editingId = null;
+  let editingProjectId = null;
+  let milestoneProjectId = null;
+  let editingMilestoneId = null;
   let storageMode = 'local-file';
+  let storageFallbackMessage = '本地文件服务未启动，当前使用浏览器临时存储';
   let saveQueue = Promise.resolve();
   let selectedTimezone = loadTimezonePreference();
   let renderedDateKey = null;
 
   // ====== Persistence ======
+  function isDateKey(value){
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(String(value || ''))) return false;
+    const date = new Date(value+'T00:00:00Z');
+    return !isNaN(date) && date.toISOString().slice(0,10) === value;
+  }
+  function normalizeProject(project){
+    if(!project || typeof project !== 'object' || !isDateKey(project.startDate)) return null;
+    const milestones = Array.isArray(project.milestones) ? project.milestones.filter(item=>
+      item && typeof item === 'object' && isDateKey(item.date) && String(item.title || '').trim()
+    ).map(item=>({
+      id: String(item.id || ('m_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6))),
+      title: String(item.title).trim().slice(0,80),
+      date: item.date,
+      description: String(item.description || '').trim().slice(0,300),
+      createdAt: item.createdAt || new Date().toISOString()
+    })) : [];
+    return {
+      id: String(project.id || ('p_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6))),
+      name: String(project.name || '未命名项目').trim().slice(0,80) || '未命名项目',
+      startDate: project.startDate,
+      createdAt: project.createdAt || new Date().toISOString(),
+      milestones: milestones
+    };
+  }
+  function normalizeProjects(projects, legacyProject){
+    const source = Array.isArray(projects) ? projects : (legacyProject ? [legacyProject] : []);
+    return source.map(normalizeProject).filter(Boolean);
+  }
+  function cachePendingState(snapshot){
+    localStorage.setItem(KEY, snapshot || JSON.stringify({version:3, todos:state.todos, projects:state.projects}));
+    localStorage.setItem(PENDING_SYNC_KEY, '1');
+  }
   async function load(){
     try{
       const response = await fetch(API_ROOT+'/api/state', {cache:'no-store'});
       if(!response.ok) throw new Error('本地数据服务不可用');
       const stored = await response.json();
       const raw = localStorage.getItem(KEY);
+      const hasPendingSync = localStorage.getItem(PENDING_SYNC_KEY) === '1';
       let browserState = null;
       try{
         const parsed = raw ? JSON.parse(raw) : null;
-        if(parsed && Array.isArray(parsed.todos)) browserState = parsed;
+        if(parsed && Array.isArray(parsed.todos)) browserState = {
+          todos: parsed.todos,
+          projects: normalizeProjects(parsed.projects, parsed.projectTimer)
+        };
       }catch(e){ /* Ignore an invalid old browser cache. */ }
 
+      // A still-running older local service cannot store multiple projects.
+      // Keep changes safely in a pending browser snapshot until the app restarts,
+      // then move that snapshot back into the upgraded local data file.
+      if(Number(stored.version || 1) < 3){
+        state = hasPendingSync && browserState ? browserState : {
+          todos: stored.todos,
+          projects: normalizeProjects(stored.projects, stored.projectTimer)
+        };
+        storageMode = 'browser-fallback';
+        storageFallbackMessage = '请重启应用以启用多项目本机保存，当前修改会临时保留';
+        cachePendingState();
+      } else if(hasPendingSync && browserState){
+        state = browserState;
+        await persist();
+        localStorage.removeItem(KEY);
+        localStorage.removeItem(PENDING_SYNC_KEY);
       // First launch after the upgrade: move old browser data into the local file.
-      if(!stored.exists && browserState){
-        state = {todos: browserState.todos};
+      } else if(!stored.exists && browserState){
+        state = {todos: browserState.todos, projects:browserState.projects};
         await persist();
         localStorage.removeItem(KEY);
       } else if(Array.isArray(stored.todos)) {
-        state = {todos: stored.todos};
+        state = {todos: stored.todos, projects:normalizeProjects(stored.projects, stored.projectTimer)};
       }
     }catch(e){
       // Keep the app usable if someone opens index.html directly instead of using
@@ -450,16 +639,21 @@ input,textarea,select{font:inherit;color:inherit}
       try{
         const raw = localStorage.getItem(KEY);
         const parsed = raw ? JSON.parse(raw) : null;
-        if(parsed && Array.isArray(parsed.todos)) state = parsed;
+        if(parsed && Array.isArray(parsed.todos)) state = {
+          todos: parsed.todos,
+          projects: normalizeProjects(parsed.projects, parsed.projectTimer)
+        };
       }catch(err){ console.warn('load failed', err); }
+      try{ cachePendingState(); }
+      catch(err){ /* Saving will report a storage error if the user changes data. */ }
       console.warn('local file storage unavailable', e);
     }
   }
   function save(){
-    const snapshot = JSON.stringify({version:1, todos:state.todos});
+    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects});
     saveQueue = saveQueue.then(async () => {
       if(storageMode === 'browser-fallback'){
-        localStorage.setItem(KEY, snapshot);
+        cachePendingState(snapshot);
         return;
       }
       const response = await fetch(API_ROOT+'/api/state', {
@@ -470,13 +664,13 @@ input,textarea,select{font:inherit;color:inherit}
       if(!response.ok) throw new Error('本地数据服务不可用');
     }).catch(e => {
       storageMode = 'browser-fallback';
-      try{ localStorage.setItem(KEY, snapshot); }
+      try{ cachePendingState(snapshot); }
       catch(err){ showToast('保存失败：' + err.message); }
       console.warn('save failed', e);
     });
   }
   async function persist(){
-    const snapshot = JSON.stringify({version:1, todos:state.todos});
+    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects});
     const response = await fetch(API_ROOT+'/api/state', {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
@@ -757,9 +951,99 @@ input,textarea,select{font:inherit;color:inherit}
       box.innerHTML = list.map(cardHTML).join('');
     }
   }
+
+  // ====== Project progress timer ======
+  function dayDiff(fromDate, toDate){
+    const from = new Date(fromDate+'T00:00:00Z');
+    const to = new Date(toDate+'T00:00:00Z');
+    return Math.round((to-from)/86400000);
+  }
+  function shortProjectDate(dateKey){
+    if(!isDateKey(dateKey)) return dateKey || '';
+    return dateKey.replace(/-/g,'.');
+  }
+  function findProject(projectId){
+    return state.projects.find(project=>project.id===projectId) || null;
+  }
+  function sortedMilestones(project){
+    if(!project || !Array.isArray(project.milestones)) return [];
+    return project.milestones.slice().sort((a,b)=>{
+      const byDate = a.date.localeCompare(b.date);
+      return byDate || String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
+    });
+  }
+  function renderProjectCard(project,projectIndex){
+    const currentDate = today();
+    const elapsed = Math.max(0, dayDiff(project.startDate, currentDate));
+    const milestones = sortedMilestones(project);
+
+    let previousDate = project.startDate;
+    let timeline = '<div class="timeline-point start">'
+      +'<div class="timeline-date">'+esc(shortProjectDate(project.startDate))+'</div>'
+      +'<div class="timeline-marker" aria-hidden="true"></div>'
+      +'<div class="timeline-card"><div class="timeline-card-main">'
+      +'<div class="timeline-kicker">项目起点</div>'
+      +'<div class="timeline-node-title">项目正式开始</div>'
+      +'<div class="timeline-start-progress"><span>已持续 <strong>'+elapsed+'</strong> 天</span><span>正在第 <strong>'+(elapsed+1)+'</strong> 天</span></div>'
+      +'</div></div></div>';
+
+    milestones.forEach((milestone,index)=>{
+      const gap = dayDiff(previousDate, milestone.date);
+      const gapLabel = index===0 ? '开始后 '+gap+' 天' : '间隔 '+gap+' 天';
+      timeline += '<div class="timeline-connector"><span class="timeline-gap">'+esc(gapLabel)+'</span></div>'
+        +'<div class="timeline-point node" data-milestone-id="'+esc(milestone.id)+'">'
+        +'<div class="timeline-date">'+esc(shortProjectDate(milestone.date))+'</div>'
+        +'<div class="timeline-marker" aria-hidden="true"></div>'
+        +'<div class="timeline-card"><div class="timeline-card-main">'
+        +'<div class="timeline-kicker">进展节点 '+(index+1)+'</div>'
+        +'<div class="timeline-node-title">'+esc(milestone.title)+'</div>'
+        +(milestone.description?'<div class="timeline-node-desc">'+esc(milestone.description)+'</div>':'')
+        +'</div><div class="timeline-actions">'
+        +'<button class="icon-btn" data-milestone-action="edit" title="编辑节点" aria-label="编辑节点">✎</button>'
+        +'<button class="icon-btn danger" data-milestone-action="delete" title="删除节点" aria-label="删除节点">🗑</button>'
+        +'</div></div></div>';
+      previousDate = milestone.date;
+    });
+
+    const currentGap = Math.max(0, dayDiff(previousDate, currentDate));
+    timeline += '<div class="timeline-connector today"><span class="timeline-gap">'+(milestones.length?'间隔 ':'开始后 ')+currentGap+' 天</span></div>'
+      +'<div class="timeline-point today">'
+      +'<div class="timeline-date">今天</div>'
+      +'<div class="timeline-marker" aria-hidden="true"></div>'
+      +'<div class="timeline-card"><div class="timeline-card-main">'
+      +'<div class="timeline-kicker">当前状态</div>'
+      +'<div class="timeline-node-title">项目进行中</div>'
+      +'</div></div></div>';
+
+    return '<article class="project-record" data-project-id="'+esc(project.id)+'">'
+      +'<header class="project-record-header">'
+      +'<div class="project-record-title"><span class="project-record-index">'+(projectIndex+1)+'</span><span class="project-record-name">'+esc(project.name)+'</span></div>'
+      +'<div class="project-card-actions">'
+      +'<button class="btn btn-ghost" data-project-action="edit">编辑项目</button>'
+      +'<button class="btn btn-progress" data-project-action="add-milestone">+ 添加节点</button>'
+      +'</div></header>'
+      +'<div class="project-record-body"><div class="timeline-section">'
+      +'<div class="timeline-bar"><div class="timeline-title">横向进展时间轴</div><div class="timeline-caption">从左向右 · 自动计算节点间隔</div><div class="timeline-swipe-tip">左右滑动查看</div></div>'
+      +'<div class="timeline-scroll" tabindex="0" role="region" aria-label="'+esc(project.name)+'横向进展时间轴"><div class="timeline-track">'+timeline+'</div></div>'
+      +'</div></div></article>';
+  }
+  function renderProjectTracker(){
+    const content = document.getElementById('project-content');
+    if(!state.projects.length){
+      content.innerHTML = '<div class="project-empty">'
+        +'<div class="project-empty-icon">🚀</div>'
+        +'<div class="project-empty-title">开始记录你的第一个项目</div>'
+        +'<div class="project-empty-copy">可以添加多个项目，每个项目都有独立的正计时和横向进展时间轴。</div>'
+        +'<button class="btn btn-progress" data-project-action="add-project">新增计时项目</button>'
+        +'</div>';
+      return;
+    }
+    content.innerHTML = '<div class="project-list">'+state.projects.map(renderProjectCard).join('')+'</div>';
+  }
   function render(){
     renderOverview();
     ['once','daily','weekly','monthly','annual'].forEach(renderSection);
+    renderProjectTracker();
   }
 
   // ====== Actions ======
@@ -890,9 +1174,148 @@ input,textarea,select{font:inherit;color:inherit}
     save(); render(); closeModal();
   }
 
+  // ====== Project and milestone modals ======
+  function openProjectModal(projectId){
+    editingProjectId = projectId || null;
+    const project = editingProjectId ? findProject(editingProjectId) : null;
+    if(editingProjectId && !project) return;
+    const form = document.getElementById('project-form');
+    document.getElementById('project-modal-title').textContent = project ? '编辑计时项目' : '新增计时项目';
+    document.getElementById('project-delete-btn').classList.toggle('hidden', !project);
+    form.projectName.value = project ? project.name : '';
+    form.projectStartDate.value = project ? project.startDate : today();
+    form.projectStartDate.max = today();
+    document.getElementById('project-modal').classList.remove('hidden');
+    setTimeout(()=>form.projectName.focus(),60);
+  }
+  function closeProjectModal(){
+    document.getElementById('project-modal').classList.add('hidden');
+    editingProjectId = null;
+  }
+  function saveProjectForm(e){
+    e.preventDefault();
+    const form = e.target;
+    const name = form.projectName.value.trim();
+    const startDate = form.projectStartDate.value;
+    if(!name){ form.projectName.focus(); return; }
+    if(!isDateKey(startDate) || startDate > today()){
+      showToast('开始日期不能晚于今天');
+      form.projectStartDate.focus();
+      return;
+    }
+    const oldProject = editingProjectId ? findProject(editingProjectId) : null;
+    const milestones = oldProject && Array.isArray(oldProject.milestones) ? oldProject.milestones : [];
+    const earlierNode = milestones.find(item=>item.date < startDate);
+    if(earlierNode){
+      showToast('开始日期不能晚于已有节点 '+earlierNode.date);
+      form.projectStartDate.focus();
+      return;
+    }
+    if(oldProject){
+      Object.assign(oldProject, {name:name, startDate:startDate, milestones:milestones});
+    } else {
+      state.projects.push({
+        id: 'p_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        name: name,
+        startDate: startDate,
+        createdAt: new Date().toISOString(),
+        milestones: []
+      });
+    }
+    save(); render(); closeProjectModal();
+    showToast(oldProject ? '项目记录已更新' : '新项目正计时已开始');
+  }
+  function deleteProject(){
+    const project = editingProjectId ? findProject(editingProjectId) : null;
+    if(!project) return;
+    if(!confirm('确定删除项目“'+project.name+'”和它的全部进展节点？')) return;
+    state.projects = state.projects.filter(item=>item.id!==project.id);
+    save(); render(); closeProjectModal();
+    showToast('项目记录已删除');
+  }
+
+  function openMilestoneModal(projectId,id){
+    const project = findProject(projectId);
+    if(!project) return;
+    milestoneProjectId = projectId;
+    editingMilestoneId = id || null;
+    const form = document.getElementById('milestone-form');
+    const milestone = id ? project.milestones.find(item=>item.id===id) : null;
+    if(id && !milestone) return;
+    document.getElementById('milestone-modal-title').textContent = milestone ? '编辑进展节点' : '添加进展节点';
+    document.getElementById('milestone-delete-btn').classList.toggle('hidden', !milestone);
+    form.milestoneTitle.value = milestone ? milestone.title : '';
+    form.milestoneDate.value = milestone ? milestone.date : today();
+    form.milestoneDate.min = project.startDate;
+    form.milestoneDate.max = today();
+    form.milestoneDescription.value = milestone ? milestone.description : '';
+    document.getElementById('milestone-modal').classList.remove('hidden');
+    setTimeout(()=>form.milestoneTitle.focus(),60);
+  }
+  function closeMilestoneModal(){
+    document.getElementById('milestone-modal').classList.add('hidden');
+    milestoneProjectId = null;
+    editingMilestoneId = null;
+  }
+  function scrollProjectTimelineToEnd(projectId){
+    requestAnimationFrame(()=>{
+      const record = Array.from(document.querySelectorAll('[data-project-id]')).find(item=>item.dataset.projectId===projectId);
+      const scroller = record ? record.querySelector('.timeline-scroll') : null;
+      if(scroller) scroller.scrollTo({left:scroller.scrollWidth, behavior:'smooth'});
+    });
+  }
+  function saveMilestoneForm(e){
+    e.preventDefault();
+    const project = milestoneProjectId ? findProject(milestoneProjectId) : null;
+    if(!project) return;
+    const form = e.target;
+    const title = form.milestoneTitle.value.trim();
+    const date = form.milestoneDate.value;
+    if(!title){ form.milestoneTitle.focus(); return; }
+    if(!isDateKey(date) || date < project.startDate || date > today()){
+      showToast('节点日期需在项目开始日至今天之间');
+      form.milestoneDate.focus();
+      return;
+    }
+    const data = {
+      title: title,
+      date: date,
+      description: form.milestoneDescription.value.trim()
+    };
+    const wasEditing = !!editingMilestoneId;
+    if(wasEditing){
+      const milestone = project.milestones.find(item=>item.id===editingMilestoneId);
+      if(!milestone) return;
+      Object.assign(milestone, data);
+      showToast('进展节点已更新');
+    } else {
+      project.milestones.push({
+        id: 'm_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        createdAt: new Date().toISOString(),
+        ...data
+      });
+      showToast('进展节点已添加');
+    }
+    const projectId = project.id;
+    save(); render(); closeMilestoneModal();
+    if(!wasEditing) scrollProjectTimelineToEnd(projectId);
+  }
+  function deleteMilestone(projectId,id){
+    const targetProjectId = projectId || milestoneProjectId;
+    const project = targetProjectId ? findProject(targetProjectId) : null;
+    if(!project) return;
+    const milestoneId = id || editingMilestoneId;
+    const milestone = project.milestones.find(item=>item.id===milestoneId);
+    if(!milestone) return;
+    if(!confirm('确定删除进展节点“'+milestone.title+'”？')) return;
+    project.milestones = project.milestones.filter(item=>item.id!==milestoneId);
+    save(); render(); closeMilestoneModal();
+    showToast('进展节点已删除');
+  }
+
   // ====== Import / Export ======
   function exportData(){
-    const blob = new Blob([JSON.stringify({version:1, exportedAt:new Date().toISOString(), todos:state.todos}, null, 2)], {type:'application/json'});
+    const blob = new Blob([JSON.stringify({version:3, exportedAt:new Date().toISOString(), todos:state.todos, projects:state.projects}, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'todo-backup-'+today()+'.json';
@@ -907,13 +1330,13 @@ input,textarea,select{font:inherit;color:inherit}
         const data = JSON.parse(e.target.result);
         if(!data || !Array.isArray(data.todos)) throw new Error('文件格式不对');
         if(!confirm('导入将覆盖当前所有数据，确定继续？')) return;
-        state = { todos: data.todos };
+        state = { todos: data.todos, projects:normalizeProjects(data.projects, data.projectTimer) };
         clearAllReminderTimeouts();
         save(); render();
         // Rebuild timeouts for any reminders in the imported data
         scheduleAllReminders();
         checkMissedReminders();
-        showToast('已导入，共 '+state.todos.length+' 条');
+        showToast('已导入 '+state.todos.length+' 条待办和 '+state.projects.length+' 个项目');
       }catch(err){ showToast('导入失败：'+err.message); }
     };
     r.readAsText(file);
@@ -1309,6 +1732,41 @@ input,textarea,select{font:inherit;color:inherit}
       e.target.value = '';
     });
 
+    // Project timer and progress nodes
+    document.getElementById('project-add-btn').addEventListener('click', ()=>openProjectModal());
+    document.getElementById('project-content').addEventListener('click', e=>{
+      const record = e.target.closest('[data-project-id]');
+      const projectId = record ? record.dataset.projectId : null;
+      const projectAction = e.target.closest('[data-project-action]');
+      if(projectAction){
+        const action = projectAction.dataset.projectAction;
+        if(action==='add-project') openProjectModal();
+        else if(action==='edit' && projectId) openProjectModal(projectId);
+        else if(action==='add-milestone' && projectId) openMilestoneModal(projectId);
+        return;
+      }
+      const actionEl = e.target.closest('[data-milestone-action]');
+      const item = e.target.closest('[data-milestone-id]');
+      if(!actionEl || !item || !projectId) return;
+      const id = item.dataset.milestoneId;
+      if(actionEl.dataset.milestoneAction==='edit') openMilestoneModal(projectId,id);
+      else if(actionEl.dataset.milestoneAction==='delete') deleteMilestone(projectId,id);
+    });
+    document.getElementById('project-form').addEventListener('submit', saveProjectForm);
+    document.getElementById('project-modal-close').addEventListener('click', closeProjectModal);
+    document.getElementById('project-cancel-btn').addEventListener('click', closeProjectModal);
+    document.getElementById('project-delete-btn').addEventListener('click', deleteProject);
+    document.getElementById('project-modal').addEventListener('click', e=>{
+      if(e.target.id==='project-modal') closeProjectModal();
+    });
+    document.getElementById('milestone-form').addEventListener('submit', saveMilestoneForm);
+    document.getElementById('milestone-modal-close').addEventListener('click', closeMilestoneModal);
+    document.getElementById('milestone-cancel-btn').addEventListener('click', closeMilestoneModal);
+    document.getElementById('milestone-delete-btn').addEventListener('click', ()=>deleteMilestone());
+    document.getElementById('milestone-modal').addEventListener('click', e=>{
+      if(e.target.id==='milestone-modal') closeMilestoneModal();
+    });
+
     // Card actions via delegation
     document.querySelectorAll('.cards').forEach(box=>{
       box.addEventListener('click', e=>{
@@ -1356,10 +1814,15 @@ input,textarea,select{font:inherit;color:inherit}
     document.addEventListener('keydown', e=>{
       const modalOpen = !document.getElementById('modal').classList.contains('hidden');
       const reminderOpen = !document.getElementById('reminder-modal').classList.contains('hidden');
+      const projectModalOpen = !document.getElementById('project-modal').classList.contains('hidden');
+      const milestoneModalOpen = !document.getElementById('milestone-modal').classList.contains('hidden');
       if(e.key==='Escape' && reminderOpen){ closeReminderModal(); return; }
+      if(e.key==='Escape' && milestoneModalOpen){ closeMilestoneModal(); return; }
+      if(e.key==='Escape' && projectModalOpen){ closeProjectModal(); return; }
       if(e.key==='Escape' && modalOpen){ closeModal(); return; }
       const inField = e.target.matches('input,textarea,select');
-      if(!inField && !modalOpen && (e.key==='n'||e.key==='N')){
+      const anyModalOpen = modalOpen || reminderOpen || projectModalOpen || milestoneModalOpen;
+      if(!inField && !anyModalOpen && (e.key==='n'||e.key==='N')){
         e.preventDefault(); openModal('once');
       }
     });
@@ -1371,7 +1834,7 @@ input,textarea,select{font:inherit;color:inherit}
   load().then(()=>{
     bind(); render();
     if(storageMode === 'browser-fallback'){
-      showToast('本地文件服务未启动，当前使用浏览器临时存储');
+      showToast(storageFallbackMessage);
     }
     // Initialize reminders (rebuilds all timeouts from saved state, fires any that were missed)
     scheduleAllReminders();

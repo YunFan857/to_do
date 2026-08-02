@@ -13,6 +13,22 @@ ROOT = Path(__file__).resolve().parent
 DATA_FILE = Path.home() / "Library" / "Application Support" / "我的待办" / "data.json"
 
 
+def normalized_state(data):
+    if not isinstance(data, dict) or not isinstance(data.get("todos"), list):
+        raise ValueError("invalid state")
+    projects = data.get("projects")
+    if projects is None:
+        legacy_project = data.get("projectTimer")
+        projects = [legacy_project] if isinstance(legacy_project, dict) else []
+    if not isinstance(projects, list) or any(not isinstance(project, dict) for project in projects):
+        raise ValueError("invalid projects")
+    return {
+        "version": 3,
+        "todos": data["todos"],
+        "projects": projects,
+    }
+
+
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
@@ -43,13 +59,11 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/state":
             if not DATA_FILE.exists():
-                return self._json(200, {"version": 1, "todos": [], "exists": False})
+                return self._json(200, {"version": 3, "todos": [], "projects": [], "exists": False})
             try:
                 with DATA_FILE.open("r", encoding="utf-8") as fh:
-                    data = json.load(fh)
-                if not isinstance(data, dict) or not isinstance(data.get("todos"), list):
-                    raise ValueError("invalid data file")
-                return self._json(200, {"version": 1, "todos": data["todos"], "exists": True})
+                    state = normalized_state(json.load(fh))
+                return self._json(200, {**state, "exists": True})
             except (OSError, ValueError, json.JSONDecodeError) as exc:
                 return self._json(500, {"error": f"无法读取本地数据：{exc}"})
         if self.path != "/" and self.path != "/index.html":
@@ -63,14 +77,12 @@ class Handler(SimpleHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             if length > 20 * 1024 * 1024:
                 raise ValueError("data too large")
-            data = json.loads(self.rfile.read(length).decode("utf-8"))
-            if not isinstance(data, dict) or not isinstance(data.get("todos"), list):
-                raise ValueError("invalid state")
+            state = normalized_state(json.loads(self.rfile.read(length).decode("utf-8")))
             DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
             fd, temp_name = tempfile.mkstemp(prefix="data.", suffix=".tmp", dir=DATA_FILE.parent)
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as fh:
-                    json.dump({"version": 1, "todos": data["todos"]}, fh, ensure_ascii=False, indent=2)
+                    json.dump(state, fh, ensure_ascii=False, indent=2)
                     fh.write("\n")
                     fh.flush()
                     os.fsync(fh.fileno())
