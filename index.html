@@ -8,84 +8,113 @@
 <style>
 *,*::before,*::after{box-sizing:border-box}
 :root{
-  --bg-1:#f6f7fb;--bg-2:#eef1fb;
-  --card:#ffffff;--card-2:#fafbfd;
-  --text-1:#0f172a;--text-2:#475569;--text-3:#94a3b8;
-  --border:#e6e8ef;--border-strong:#cdd2dd;
-  --primary:#4f46e5;--primary-hover:#4338ca;--primary-soft:#eef2ff;
-  --once:#4f46e5;--once-soft:#eef2ff;
-  --daily:#10b981;--daily-soft:#ecfdf5;
-  --weekly:#8b5cf6;--weekly-soft:#f5f3ff;
-  --monthly:#f59e0b;--monthly-soft:#fffbeb;
-  --annual:#e11d48;--annual-soft:#fff1f2;
-  --progress:#0f766e;--progress-hover:#115e59;--progress-soft:#f0fdfa;
-  --danger:#ef4444;--danger-soft:#fef2f2;
-  --reminder:#f59e0b;--reminder-soft:#fff7ed;
+  --bg:#f7f1e3;--bg-1:#f7f1e3;--bg-2:#efe8d6;
+  --card:#fffdf6;--card-2:#faf5e9;
+  --text-1:#3b382c;--text-2:#716c5a;--text-3:#a59f8c;
+  --border:#eae2cd;--border-strong:#d8cfb4;
+  --primary:#0f766e;--primary-hover:#0c5f58;--primary-soft:#dff2ea;
+  --once:#0f766e;--once-soft:#dff2ea;
+  --daily:#b47a10;--daily-soft:#f9edd2;
+  --weekly:#6f63d9;--weekly-soft:#ecebfc;
+  --monthly:#cf4f81;--monthly-soft:#fbe7ef;
+  --annual:#d85a30;--annual-soft:#fae9e1;
+  --progress:#0f766e;--progress-hover:#0c5f58;--progress-soft:#dff2ea;
+  --danger:#d64545;--danger-soft:#fcebeb;
+  --reminder:#c07a12;--reminder-soft:#fbf0d9;
   --radius:18px;--radius-sm:12px;--radius-xs:8px;
-  --shadow-sm:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.05);
-  --shadow:0 2px 6px rgba(15,23,42,.04),0 8px 24px rgba(15,23,42,.05);
-  --shadow-lg:0 8px 24px rgba(15,23,42,.12),0 24px 48px rgba(15,23,42,.10);
+  --shadow-sm:0 1px 2px rgba(93,80,45,.05),0 1px 3px rgba(93,80,45,.06);
+  --shadow:0 2px 6px rgba(93,80,45,.06),0 8px 24px rgba(93,80,45,.07);
+  --shadow-lg:0 8px 24px rgba(93,80,45,.14),0 24px 48px rgba(93,80,45,.12);
   --t:200ms cubic-bezier(.4,0,.2,1);
 }
-html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.55;color:var(--text-1);background:linear-gradient(135deg,var(--bg-1) 0%,var(--bg-2) 100%) fixed;min-height:100vh;-webkit-font-smoothing:antialiased}
+html,body{margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.55;color:var(--text-1);background-color:var(--bg);background-image:radial-gradient(rgba(105,92,55,.06) 1px,transparent 1.4px);background-size:22px 22px;min-height:100vh;-webkit-font-smoothing:antialiased}
 button{font:inherit;cursor:pointer;border:0;background:0 0;color:inherit;padding:0}
 input,textarea,select{font:inherit;color:inherit}
 .hidden{display:none!important}
-.app{max-width:1200px;margin:0 auto;padding:36px 24px 80px}
 
-/* Topbar */
-.topbar{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:16px}
-.brand h1{margin:0;font-size:30px;font-weight:700;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
-.brand .date{margin:6px 0 0;color:var(--text-2);font-size:13px;display:flex;align-items:center;gap:8px}
-.brand .date .dot{width:4px;height:4px;border-radius:50%;background:var(--text-3)}
-.timezone-clock{display:flex;align-items:center;gap:14px;padding:9px 13px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow-sm)}
-.timezone-picker{display:flex;flex-direction:column;gap:2px}
+/* ===== Layout: sidebar + main ===== */
+.layout{display:flex;min-height:100vh;align-items:stretch}
+.sidebar{width:238px;flex-shrink:0;padding:24px 16px 20px;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:2px 6px}
+.brand-logo{width:42px;height:42px;border-radius:13px;background:var(--primary-soft);border:1.5px solid rgba(15,118,110,.22);display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
+.brand-name{font-size:16px;font-weight:700;color:var(--text-1);letter-spacing:.01em}
+.brand-slogan{font-size:11.5px;color:var(--text-3);margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:3px;margin-top:22px}
+.nav-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:12px;font-size:13.5px;color:var(--text-2);text-align:left;transition:all var(--t)}
+.nav-item:hover{background:var(--card);color:var(--text-1)}
+.nav-item.active{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.nav-icon{width:20px;text-align:center;font-size:15px;flex-shrink:0}
+.nav-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav-count{font-size:11px;color:var(--text-3);background:var(--card);border:1px solid var(--border);padding:1px 7px;border-radius:999px;font-variant-numeric:tabular-nums}
+.nav-item.active .nav-count{color:var(--primary);background:#fff;border-color:rgba(15,118,110,.25)}
+.side-footer{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:20px}
+.side-clock{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px}
+.timezone-picker{display:flex;flex-direction:column;gap:2px;min-width:0}
 .timezone-label{font-size:10px;font-weight:600;letter-spacing:.04em;color:var(--text-3)}
-.timezone-picker select{border:0;background:transparent;padding:0 18px 0 0;font-size:13px;font-weight:600;color:var(--text-1);cursor:pointer;outline:0}
-.clock-divider{width:1px;height:34px;background:var(--border)}
-.capital-display{display:grid;grid-template-columns:auto auto;column-gap:8px;align-items:baseline;min-width:150px}
-.capital-name{font-size:11px;color:var(--text-2);grid-column:1/-1}
-.capital-time{font-size:20px;font-weight:650;line-height:1.1;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--text-1)}
-.topbar-actions{display:flex;gap:8px;flex-wrap:wrap}
+.timezone-picker select{border:0;background:transparent;padding:0;font-size:12.5px;font-weight:600;color:var(--text-1);cursor:pointer;outline:0;max-width:92px}
+.clock-divider{width:1px;height:30px;background:var(--border);flex-shrink:0}
+.capital-display{display:flex;flex-direction:column;min-width:0;flex:1}
+.capital-name{font-size:10.5px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.capital-time{font-size:17px;font-weight:650;line-height:1.15;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:var(--text-1)}
+.side-actions{display:flex;flex-direction:column;gap:7px}
+.side-actions-row{display:flex;gap:7px}
+.side-actions-row .btn{flex:1;justify-content:center;padding:7px 8px;font-size:12px}
+
+/* ===== Main / views ===== */
+.main{flex:1;min-width:0;max-width:1020px;padding:32px 36px 70px}
+.view{display:none}
+.view.active{display:block;animation:viewIn 240ms ease-out}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.view-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap}
+.view-title{margin:0;font-size:26px;font-weight:700;letter-spacing:-.01em;display:flex;align-items:center;gap:10px}
+.view-sub{margin:6px 0 0;font-size:13px;color:var(--text-2)}
+.view-actions{display:flex;align-items:center;gap:8px}
+
+/* ===== Home dashboard ===== */
+.home-title{margin:0;font-size:28px;font-weight:700;letter-spacing:-.01em}
+.home-date{margin:6px 0 0;font-size:13px;color:var(--text-2)}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(225px,1fr));gap:14px;margin-bottom:16px}
+.dash-card{border-radius:18px;padding:16px 17px;text-align:left;border:1px solid transparent;transition:all var(--t);display:flex;flex-direction:column}
+.dash-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.dash-label{font-size:12px;font-weight:600;opacity:.85}
+.dash-value{font-size:25px;font-weight:700;line-height:1.2;margin-top:4px}
+.dash-value .dash-sub{font-size:13px;font-weight:400;opacity:.75;margin-left:2px}
+.dash-value.small{font-size:17px;margin-top:2px}
+.dash-note{font-size:12px;margin-top:4px;opacity:.8}
+.dash-progress{height:8px;border-radius:999px;background:rgba(255,255,255,.7);margin-top:10px;overflow:hidden}
+.dash-progress i{display:block;height:100%;border-radius:999px;background:#0f9d8a;transition:width .4s var(--t)}
+.dash-lines{display:flex;flex-direction:column;gap:4px;margin-top:8px;min-width:0}
+.dash-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;min-width:0}
+.dash-line span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dash-line .dash-date{flex-shrink:0;opacity:.75;font-variant-numeric:tabular-nums}
+.dash-line.overdue .dash-date{color:var(--danger);font-weight:600;opacity:1}
+.dash-card.mint{background:#def2e8;color:#0b5c4e;border-color:rgba(15,118,110,.16)}
+.dash-card.pink{background:#fbe3ec;color:#8f3157;border-color:rgba(207,79,129,.16)}
+.dash-card.amber{background:#f9ecc8;color:#7c5c0c;border-color:rgba(180,122,16,.18)}
+.dash-card.purple{background:#e9e7fc;color:#463c9e;border-color:rgba(111,99,217,.16)}
+
+/* Today quick list */
+.today-box{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow-sm)}
+.today-title{margin:0;font-size:15px;font-weight:650;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.today-sub{font-size:11.5px;color:var(--text-3);font-weight:400}
+.today-list{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.today-item{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:12px;border:1px solid var(--border);background:var(--card-2);cursor:pointer;transition:all var(--t)}
+.today-item:hover{border-color:var(--border-strong);background:var(--card)}
+.today-item.done{opacity:.55}
+.today-item.done .ti-title{text-decoration:line-through;color:var(--text-3)}
+.ti-title{flex:1;min-width:0;font-size:13.5px;font-weight:500;word-break:break-word}
+.today-empty{padding:22px 10px;text-align:center;color:var(--text-3);font-size:13px}
+
+/* ===== Buttons ===== */
 .btn{padding:8px 14px;border-radius:10px;font-size:13px;font-weight:500;transition:all var(--t);display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid transparent}
-.btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 2px rgba(79,70,229,.3)}
-.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,70,229,.3)}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 2px rgba(15,118,110,.28)}
+.btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.26)}
 .btn-ghost{background:var(--card);color:var(--text-2);border-color:var(--border)}
 .btn-ghost:hover{background:var(--card-2);color:var(--text-1);border-color:var(--border-strong)}
+.panel-count{font-size:11px;font-weight:600;color:var(--text-2);padding:3px 9px;background:var(--card);border-radius:999px;border:1px solid var(--border);font-variant-numeric:tabular-nums}
 
-/* Overview */
-.overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:24px}
-.stat-card{background:var(--card);border-radius:var(--radius);padding:14px 18px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;transition:all var(--t);border:1px solid transparent}
-.stat-card:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
-.stat-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-.stat-icon.once{background:var(--once-soft)}.stat-icon.daily{background:var(--daily-soft)}.stat-icon.weekly{background:var(--weekly-soft)}.stat-icon.monthly{background:var(--monthly-soft)}.stat-icon.annual{background:var(--annual-soft)}
-.stat-text{display:flex;flex-direction:column;min-width:0}
-.stat-label{font-size:12px;color:var(--text-2);font-weight:500}
-.stat-value{font-size:22px;font-weight:600;color:var(--text-1);line-height:1.2;margin-top:2px}
-.stat-value .sub{color:var(--text-3);font-size:13px;font-weight:400;margin-left:2px}
-
-/* Grid */
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:760px){.grid{grid-template-columns:1fr}}
-.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;overflow:hidden;min-height:220px;border:1px solid var(--border)}
-.panel-header{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border)}
-.panel-title{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
-.panel-title .icon{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px}
-.panel-title .icon.once{background:var(--once-soft)}.panel-title .icon.daily{background:var(--daily-soft)}.panel-title .icon.weekly{background:var(--weekly-soft)}.panel-title .icon.monthly{background:var(--monthly-soft)}.panel-title .icon.annual{background:var(--annual-soft)}
-.panel-count{font-size:11px;font-weight:600;color:var(--text-2);padding:3px 8px;background:var(--card-2);border-radius:999px;border:1px solid var(--border)}
-.panel-actions{display:flex;gap:4px}
-.icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all var(--t);font-size:15px}
-.icon-btn:hover{background:var(--card-2);color:var(--text-1)}
-.icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
-.icon-btn.reminder-on{color:var(--reminder);background:var(--reminder-soft)}
-.icon-btn.reminder-on:hover{background:#fde6c1;color:#b45309}
-
-/* Cards */
-.cards{padding:12px;display:flex;flex-direction:column;gap:8px;flex:1;max-height:480px;overflow-y:auto}
-.cards::-webkit-scrollbar{width:6px}
-.cards::-webkit-scrollbar-track{background:transparent}
-.cards::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
-.cards::-webkit-scrollbar-thumb:hover{background:var(--border-strong)}
+/* ===== Cards ===== */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;align-content:start}
 .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 12px;display:flex;align-items:flex-start;gap:11px;transition:all var(--t);position:relative;animation:slideIn 220ms ease-out}
 @keyframes slideIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-sm);background:var(--card-2)}
@@ -93,8 +122,8 @@ input,textarea,select{font:inherit;color:inherit}
 .card.completed .card-title{text-decoration:line-through;color:var(--text-3)}
 .card-check{width:20px;height:20px;border-radius:7px;border:2px solid var(--border-strong);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;transition:all var(--t);cursor:pointer;background:var(--card)}
 .card-check:hover{border-color:var(--primary);background:var(--primary-soft)}
-.card.completed .card-check{background:var(--primary);border-color:var(--primary)}
-.card.completed .card-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700;line-height:1}
+.card.completed .card-check,.today-item.done .card-check{background:var(--primary);border-color:var(--primary)}
+.card.completed .card-check::after,.today-item.done .card-check::after{content:'✓';color:#fff;font-size:12px;font-weight:700;line-height:1}
 .card-body{flex:1;min-width:0;cursor:pointer;padding:1px 0}
 .card-title{font-size:14px;font-weight:500;color:var(--text-1);word-break:break-word;line-height:1.4}
 .card-desc{font-size:12px;color:var(--text-2);margin-top:3px;word-break:break-word;line-height:1.5}
@@ -106,8 +135,8 @@ input,textarea,select{font:inherit;color:inherit}
 .badge.monthly{background:var(--monthly-soft);color:var(--monthly)}
 .badge.annual{background:var(--annual-soft);color:var(--annual)}
 .badge.overdue{background:var(--danger-soft);color:var(--danger)}
-.badge.streak{background:#fff7ed;color:#ea580c}
-.badge.reminder{background:var(--reminder-soft);color:#b45309}
+.badge.streak{background:#fdf0d9;color:#c06a10}
+.badge.reminder{background:var(--reminder-soft);color:#9a5c0a}
 .card-actions{display:flex;gap:2px;opacity:0;transition:opacity var(--t);flex-shrink:0}
 .card:hover .card-actions,.card:focus-within .card-actions{opacity:1}
 .card-actions .icon-btn{width:26px;height:26px;font-size:13px}
@@ -115,20 +144,16 @@ input,textarea,select{font:inherit;color:inherit}
 .empty{padding:36px 20px;text-align:center;color:var(--text-3);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:6px}
 .empty-emoji{font-size:30px;opacity:.6}
 .empty-tip{font-size:11px;color:var(--text-3);opacity:.7}
+.icon-btn{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:all var(--t);font-size:15px}
+.icon-btn:hover{background:var(--card-2);color:var(--text-1)}
+.icon-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}
+.icon-btn.reminder-on{color:var(--reminder);background:var(--reminder-soft)}
+.icon-btn.reminder-on:hover{background:#f5e3bb;color:#8a5409}
 
-/* Project progress timer */
-.project-tracker{margin-top:18px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden}
-.project-header{padding:17px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border)}
-.project-heading{display:flex;align-items:center;gap:11px;min-width:0}
-.project-heading-icon{width:34px;height:34px;border-radius:10px;background:var(--progress-soft);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
-.project-heading-text{min-width:0}
-.project-heading-title{font-size:16px;font-weight:650;color:var(--text-1)}
-.project-heading-subtitle{font-size:12px;color:var(--text-3);margin-top:1px}
-.project-header-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+/* ===== Project progress timer ===== */
 .btn-progress{background:var(--progress);color:#fff;box-shadow:0 1px 2px rgba(15,118,110,.28)}
 .btn-progress:hover{background:var(--progress-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(15,118,110,.24)}
-.project-body{padding:16px}
-.project-empty{min-height:190px;border:1px dashed var(--border-strong);border-radius:14px;background:linear-gradient(135deg,#fbfefd 0%,var(--progress-soft) 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;color:var(--text-2)}
+.project-empty{min-height:190px;border:1px dashed var(--border-strong);border-radius:14px;background:var(--card-2);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;color:var(--text-2)}
 .project-empty-icon{font-size:34px;margin-bottom:8px}
 .project-empty-title{font-size:15px;font-weight:600;color:var(--text-1);margin-bottom:4px}
 .project-empty-copy{font-size:12px;color:var(--text-3);max-width:360px;margin-bottom:16px}
@@ -170,10 +195,10 @@ input,textarea,select{font:inherit;color:inherit}
 .timeline-gap{position:absolute;left:50%;top:16px;transform:translateX(-50%);padding:2px 7px;border-radius:999px;background:var(--progress-soft);color:var(--progress);font-size:10px;font-weight:650;white-space:nowrap;z-index:2}
 .timeline-connector.today .timeline-gap{background:var(--primary-soft);color:var(--primary)}
 .timeline-swipe-tip{display:none;color:var(--text-3);font-size:10px}
-@media (max-width:600px){.project-header{align-items:flex-start}.project-heading-subtitle{display:none}.project-header-actions{flex-shrink:0}.project-header-actions .btn{padding:8px 10px}.project-body{padding:11px}.project-record-header{align-items:flex-start}.project-card-actions{flex-wrap:wrap;justify-content:flex-end}.project-card-actions .btn{padding:5px 8px}.project-record-body{padding:10px}.timeline-point{width:160px;flex-basis:160px}.timeline-connector{width:90px;flex-basis:90px}.timeline-connector::before{left:-72px;right:-72px}.timeline-actions{opacity:1}.timeline-caption{display:none}.timeline-swipe-tip{display:block}}
+@media (max-width:600px){.project-card-actions{flex-wrap:wrap;justify-content:flex-end}.project-card-actions .btn{padding:5px 8px}.project-record-body{padding:10px}.timeline-point{width:160px;flex-basis:160px}.timeline-connector{width:90px;flex-basis:90px}.timeline-connector::before{left:-72px;right:-72px}.timeline-actions{opacity:1}.timeline-caption{display:none}.timeline-swipe-tip{display:block}}
 
-/* Modal */
-.modal{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn 180ms ease-out}
+/* ===== Modal ===== */
+.modal{position:fixed;inset:0;background:rgba(59,56,44,.45);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;animation:fadeIn 180ms ease-out}
 .modal.hidden{display:none}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 .modal-content{background:var(--card);border-radius:var(--radius);width:100%;max-width:480px;box-shadow:var(--shadow-lg);animation:scaleIn 200ms ease-out;max-height:90vh;display:flex;flex-direction:column}
@@ -202,153 +227,236 @@ input,textarea,select{font:inherit;color:inherit}
 .btn-danger{color:var(--danger);background:0 0;margin-right:auto;border-color:transparent}
 .btn-danger:hover{background:var(--danger-soft);border-color:var(--danger-soft)}
 
-/* Toast */
+/* ===== Toast ===== */
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text-1);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;box-shadow:var(--shadow-lg);opacity:0;transition:all 280ms ease-out;pointer-events:none;z-index:200;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* Reminder modal (smaller, separate from main modal) */
+/* ===== Reminder modal ===== */
 .reminder-modal{max-width:360px}
-.reminder-hint{margin-top:10px;padding:9px 12px;background:var(--reminder-soft);border-radius:var(--radius-xs);color:#92400e;font-size:12px;line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+.reminder-hint{margin-top:10px;padding:9px 12px;background:var(--reminder-soft);border-radius:var(--radius-xs);color:#8a5c10;font-size:12px;line-height:1.55;display:flex;gap:8px;align-items:flex-start}
 .reminder-hint .hint-icon{flex-shrink:0;font-size:14px;line-height:1.55}
-.reminder-hint b{color:#7c2d12;font-weight:600}
+.reminder-hint b{color:#6e4708;font-weight:600}
 
-/* Reminder alert banner (top slide-down) */
-.alert-banner{position:fixed;top:16px;left:50%;transform:translate(-50%,-160%);z-index:300;background:#fff;border:1px solid var(--border);box-shadow:var(--shadow-lg);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;width:min(420px,calc(100vw - 32px));transition:transform 320ms cubic-bezier(.4,0,.2,1)}
+/* ===== Alert banner ===== */
+.alert-banner{position:fixed;top:20px;left:50%;transform:translate(-50%,-180%);z-index:300;background:rgba(255,253,246,.94);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--border);box-shadow:0 12px 40px rgba(93,80,45,.2),0 4px 12px rgba(93,80,45,.1);border-radius:16px;padding:0;display:flex;flex-direction:column;width:min(460px,calc(100vw - 32px));transition:transform 360ms cubic-bezier(.34,1.56,.64,1),opacity 300ms;overflow:hidden}
 .alert-banner.show{transform:translate(-50%,0)}
-.alert-banner .alert-bell{width:36px;height:36px;border-radius:10px;background:var(--reminder-soft);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;animation:bellShake 800ms ease-in-out}
-@keyframes bellShake{0%,100%{transform:rotate(0)}10%,30%,50%,70%,90%{transform:rotate(-12deg)}20%,40%,60%,80%{transform:rotate(12deg)}}
-.alert-banner .alert-body{flex:1;min-width:0}
-.alert-banner .alert-title{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:2px}
-.alert-banner .alert-text{font-size:12px;color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.alert-banner .alert-action{padding:6px 10px;border-radius:8px;background:var(--reminder-soft);color:#b45309;font-size:12px;font-weight:500;flex-shrink:0}
-.alert-banner .alert-action:hover{background:#fde6c1}
-.alert-banner .alert-close{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:14px;flex-shrink:0}
+.alert-banner .alert-main{display:flex;align-items:flex-start;gap:14px;padding:16px 18px 12px}
+.alert-banner .alert-bell{width:44px;height:44px;border-radius:12px;background:var(--reminder-soft);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;animation:bellShake 1.2s ease-in-out;box-shadow:0 2px 8px rgba(192,122,18,.18)}
+@keyframes bellShake{0%,100%{transform:rotate(0)}10%,30%,50%,70%,90%{transform:rotate(-14deg)}20%,40%,60%,80%{transform:rotate(14deg)}}
+.alert-banner .alert-body{flex:1;min-width:0;padding-top:1px}
+.alert-banner .alert-title{font-size:14px;font-weight:600;color:var(--text-1);margin-bottom:3px;display:flex;align-items:center;gap:6px}
+.alert-banner .alert-title .alert-tag{font-size:10px;font-weight:600;color:var(--reminder);background:var(--reminder-soft);padding:2px 6px;border-radius:4px;letter-spacing:.02em}
+.alert-banner .alert-text{font-size:12.5px;color:var(--text-2);line-height:1.5;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.alert-banner .alert-close{position:absolute;top:10px;right:10px;width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--text-3);font-size:14px;flex-shrink:0;transition:all var(--t);z-index:2}
 .alert-banner .alert-close:hover{background:var(--card-2);color:var(--text-1)}
-.alert-banner .alert-progress{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--reminder);border-radius:0 0 14px 14px;transform-origin:left;animation:autoDismiss 12s linear forwards}
+.alert-banner .alert-actions{display:flex;gap:8px;padding:0 18px 14px;flex-wrap:wrap}
+.alert-banner .alert-btn{padding:7px 14px;border-radius:9px;font-size:12px;font-weight:500;transition:all var(--t);display:flex;align-items:center;gap:5px}
+.alert-banner .alert-btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 3px rgba(15,118,110,.28)}
+.alert-banner .alert-btn-primary:hover{background:var(--primary-hover);transform:translateY(-1px)}
+.alert-banner .alert-btn-soft{background:var(--reminder-soft);color:#9a5c0a}
+.alert-banner .alert-btn-soft:hover{background:#f5e3bb}
+.alert-banner .alert-btn-ghost{background:var(--card-2);color:var(--text-2);border:1px solid var(--border)}
+.alert-banner .alert-btn-ghost:hover{background:var(--bg-2);color:var(--text-1)}
+.alert-banner .alert-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,var(--reminder),#e8b04a);transform-origin:left;animation:autoDismiss 15s linear forwards}
 @keyframes autoDismiss{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media (max-width:480px){.alert-banner .alert-main{padding:14px 14px 10px}.alert-banner .alert-actions{padding:0 14px 12px}.alert-banner .alert-bell{width:38px;height:38px;font-size:18px}}
 
-@media (max-width:760px){.timezone-clock{order:3;width:100%;justify-content:space-between}.capital-display{min-width:0}}
-@media (max-width:480px){.app{padding:20px 14px 60px}.brand h1{font-size:24px}.stat-value{font-size:18px}.panel-header{padding:14px}.cards{padding:10px}.timezone-clock{padding:9px 11px}.capital-time{font-size:18px}}
+/* ===== Settings modal ===== */
+.settings-modal .modal-body{padding:20px 22px}
+.setting-row{padding:14px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:0;padding-bottom:0}
+.setting-row:first-child{padding-top:0}
+.setting-label{font-size:13px;font-weight:600;color:var(--text-1);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.setting-desc{font-size:12px;color:var(--text-2);margin-bottom:10px;line-height:1.5}
+.sound-select-wrap{display:flex;gap:8px;align-items:stretch}
+.sound-select-wrap select{flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:9px;background:var(--card);font-size:13px;color:var(--text-1);outline:0;transition:border-color var(--t)}
+.sound-select-wrap select:focus{border-color:var(--primary)}
+.btn-listen{padding:9px 14px;border-radius:9px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:600;white-space:nowrap;transition:all var(--t);display:flex;align-items:center;gap:5px}
+.btn-listen:hover{background:#c8e8dc}
+.btn-listen.playing{background:var(--primary);color:#fff}
+.perm-status{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.perm-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.perm-dot.granted{background:#3d9a6c;box-shadow:0 0 0 3px #d9efe2}
+.perm-dot.denied{background:var(--danger);box-shadow:0 0 0 3px var(--danger-soft)}
+.perm-dot.default{background:var(--text-3);box-shadow:0 0 0 3px var(--card-2)}
+.btn-enable-notif{margin-top:10px;padding:8px 14px;border-radius:9px;background:var(--primary);color:#fff;font-size:12px;font-weight:500}
+.btn-enable-notif:hover{background:var(--primary-hover)}
+.btn-test-notif{margin-top:8px;padding:8px 14px;border-radius:9px;background:var(--card-2);color:var(--text-2);font-size:12px;font-weight:500;border:1px solid var(--border)}
+.btn-test-notif:hover{background:var(--bg-2);color:var(--text-1)}
+
+/* ===== Responsive ===== */
+@media (max-width:920px){
+  .layout{flex-direction:column}
+  .sidebar{position:static;width:100%;height:auto;padding:16px 16px 14px}
+  .nav{flex-direction:row;overflow-x:auto;margin-top:14px;padding-bottom:2px;gap:6px}
+  .nav-item{width:auto;white-space:nowrap;flex-shrink:0}
+  .side-footer{margin-top:14px;flex-direction:row;align-items:center;flex-wrap:wrap}
+  .side-clock{flex:1;min-width:210px}
+  .side-actions{flex-direction:row;flex:1;justify-content:flex-end;flex-wrap:wrap}
+  .side-actions-row{flex-wrap:wrap}
+  .side-actions-row .btn{flex:0 0 auto;padding:7px 10px}
+  .main{padding:22px 16px 60px}
+  .view-title{font-size:22px}
+  .home-title{font-size:24px}
+}
+@media (max-width:480px){
+  .dash-grid{grid-template-columns:1fr 1fr}
+  .cards{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="topbar">
+<div class="layout">
+  <aside class="sidebar">
     <div class="brand">
-      <h1>📝 我的待办</h1>
-      <p class="date" id="date"></p>
-    </div>
-    <div class="timezone-clock" aria-label="首都时间">
-      <label class="timezone-picker" for="timezone-select">
-        <span class="timezone-label">时区时间</span>
-        <select id="timezone-select" aria-label="选择国家时区">
-          <option value="china">🇨🇳 中国</option>
-          <option value="usa">🇺🇸 美国</option>
-        </select>
-      </label>
-      <span class="clock-divider" aria-hidden="true"></span>
-      <div class="capital-display">
-        <span class="capital-name" id="capital-name">中国 · 北京</span>
-        <time class="capital-time" id="capital-time">--:--:--</time>
+      <div class="brand-logo" aria-hidden="true">📝</div>
+      <div>
+        <div class="brand-name">我的待办</div>
+        <div class="brand-slogan">把日子过明白</div>
       </div>
     </div>
-    <div class="topbar-actions">
-      <button class="btn btn-primary" id="new-btn">+ 新建待办</button>
-      <button class="btn btn-ghost" id="export-btn" title="导出数据备份">⤓ 导出</button>
-      <button class="btn btn-ghost" id="import-btn" title="导入数据备份">⤒ 导入</button>
+    <nav class="nav" aria-label="板块导航">
+      <button class="nav-item active" data-view="home"><span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-label">首页</span></button>
+      <button class="nav-item" data-view="once"><span class="nav-icon" aria-hidden="true">📌</span><span class="nav-label">备忘录</span><span class="nav-count" id="navcount-once">0</span></button>
+      <button class="nav-item" data-view="daily"><span class="nav-icon" aria-hidden="true">☀️</span><span class="nav-label">每日待办</span><span class="nav-count" id="navcount-daily">0</span></button>
+      <button class="nav-item" data-view="weekly"><span class="nav-icon" aria-hidden="true">📅</span><span class="nav-label">每周待办</span><span class="nav-count" id="navcount-weekly">0</span></button>
+      <button class="nav-item" data-view="monthly"><span class="nav-icon" aria-hidden="true">🗓️</span><span class="nav-label">每月待办</span><span class="nav-count" id="navcount-monthly">0</span></button>
+      <button class="nav-item" data-view="annual"><span class="nav-icon" aria-hidden="true">🎂</span><span class="nav-label">每年待办</span><span class="nav-count" id="navcount-annual">0</span></button>
+      <button class="nav-item" data-view="projects"><span class="nav-icon" aria-hidden="true">⏱️</span><span class="nav-label">项目正计时</span></button>
+    </nav>
+    <div class="side-footer">
+      <div class="side-clock" aria-label="时区时间">
+        <label class="timezone-picker" for="timezone-select">
+          <span class="timezone-label">时区</span>
+          <select id="timezone-select" aria-label="选择国家时区">
+            <option value="china">🇨🇳 中国</option>
+            <option value="usa">🇺🇸 美国</option>
+          </select>
+        </label>
+        <span class="clock-divider" aria-hidden="true"></span>
+        <div class="capital-display">
+          <span class="capital-name" id="capital-name">中国 · 北京</span>
+          <time class="capital-time" id="capital-time">--:--:--</time>
+        </div>
+      </div>
+      <div class="side-actions">
+        <button class="btn btn-primary" id="new-btn">＋ 新建待办</button>
+        <div class="side-actions-row">
+          <button class="btn btn-ghost" id="settings-btn" title="提示音与通知设置">⚙️ 设置</button>
+          <button class="btn btn-ghost" id="export-btn" title="导出数据备份">⤓ 导出</button>
+          <button class="btn btn-ghost" id="import-btn" title="导入数据备份">⤒ 导入</button>
+        </div>
+      </div>
     </div>
-  </div>
+  </aside>
 
-  <div class="overview" id="overview"></div>
+  <main class="main">
+    <!-- 首页 · 仪表盘 -->
+    <section class="view active" id="view-home" aria-label="首页仪表盘">
+      <div class="view-head">
+        <div>
+          <h1 class="home-title" id="home-greeting">今天也要过明白</h1>
+          <p class="home-date" id="date"></p>
+        </div>
+      </div>
+      <div class="dash-grid" id="dash-grid"></div>
+      <div class="today-box" id="dash-today">
+        <h3 class="today-title">今日速览 <span class="today-sub">点圆圈打卡 · 点文字进入板块</span></h3>
+        <div class="today-list" id="today-list"></div>
+      </div>
+    </section>
 
-  <div class="grid">
-    <section class="panel" data-type="once">
-      <header class="panel-header">
-        <div class="panel-title">
-          <span class="icon once">📌</span>
-          一次性待办
+    <!-- 备忘录（原一次性待办） -->
+    <section class="view" id="view-once" aria-label="备忘录">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">📌</span> 备忘录</h1>
+          <p class="view-sub">一次性的事情，记下来就不会忘</p>
+        </div>
+        <div class="view-actions">
           <span class="panel-count" id="count-once"></span>
+          <button class="btn btn-primary add-btn" data-type="once" title="添加备忘录">＋ 添加</button>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn add-btn" data-type="once" title="添加一次性待办" aria-label="添加">+</button>
-        </div>
-      </header>
+      </div>
       <div class="cards" id="cards-once"></div>
     </section>
 
-    <section class="panel" data-type="daily">
-      <header class="panel-header">
-        <div class="panel-title">
-          <span class="icon daily">☀️</span>
-          每日待办
+    <!-- 每日待办 -->
+    <section class="view" id="view-daily" aria-label="每日待办">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">☀️</span> 每日待办</h1>
+          <p class="view-sub">每天打卡，把好习惯攒起来</p>
+        </div>
+        <div class="view-actions">
           <span class="panel-count" id="count-daily"></span>
+          <button class="btn btn-primary add-btn" data-type="daily" title="添加每日待办">＋ 添加</button>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn add-btn" data-type="daily" title="添加每日待办" aria-label="添加">+</button>
-        </div>
-      </header>
+      </div>
       <div class="cards" id="cards-daily"></div>
     </section>
 
-    <section class="panel" data-type="weekly">
-      <header class="panel-header">
-        <div class="panel-title">
-          <span class="icon weekly">📅</span>
-          每周待办
+    <!-- 每周待办 -->
+    <section class="view" id="view-weekly" aria-label="每周待办">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">📅</span> 每周待办</h1>
+          <p class="view-sub">以周为节奏安排事情</p>
+        </div>
+        <div class="view-actions">
           <span class="panel-count" id="count-weekly"></span>
+          <button class="btn btn-primary add-btn" data-type="weekly" title="添加每周待办">＋ 添加</button>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn add-btn" data-type="weekly" title="添加每周待办" aria-label="添加">+</button>
-        </div>
-      </header>
+      </div>
       <div class="cards" id="cards-weekly"></div>
     </section>
 
-    <section class="panel" data-type="monthly">
-      <header class="panel-header">
-        <div class="panel-title">
-          <span class="icon monthly">🗓️</span>
-          每月待办
+    <!-- 每月待办 -->
+    <section class="view" id="view-monthly" aria-label="每月待办">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">🗓️</span> 每月待办</h1>
+          <p class="view-sub">每月固定动作，一眼清点</p>
+        </div>
+        <div class="view-actions">
           <span class="panel-count" id="count-monthly"></span>
+          <button class="btn btn-primary add-btn" data-type="monthly" title="添加每月待办">＋ 添加</button>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn add-btn" data-type="monthly" title="添加每月待办" aria-label="添加">+</button>
-        </div>
-      </header>
+      </div>
       <div class="cards" id="cards-monthly"></div>
     </section>
 
-    <section class="panel" data-type="annual">
-      <header class="panel-header">
-        <div class="panel-title">
-          <span class="icon annual">🎂</span>
-          每年待办
+    <!-- 每年待办 -->
+    <section class="view" id="view-annual" aria-label="每年待办">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">🎂</span> 每年待办</h1>
+          <p class="view-sub">生日、年检、续费，一年一次不遗漏</p>
+        </div>
+        <div class="view-actions">
           <span class="panel-count" id="count-annual"></span>
+          <button class="btn btn-primary add-btn" data-type="annual" title="添加每年待办">＋ 添加</button>
         </div>
-        <div class="panel-actions">
-          <button class="icon-btn add-btn" data-type="annual" title="添加每年待办" aria-label="添加">+</button>
-        </div>
-      </header>
+      </div>
       <div class="cards" id="cards-annual"></div>
     </section>
-  </div>
 
-  <section class="project-tracker" aria-labelledby="project-tracker-title">
-    <header class="project-header">
-      <div class="project-heading">
-        <span class="project-heading-icon" aria-hidden="true">⏱️</span>
-        <div class="project-heading-text">
-          <div class="project-heading-title" id="project-tracker-title">项目正计时</div>
-          <div class="project-heading-subtitle">同时记录多个项目的持续时间和阶段进展</div>
+    <!-- 项目正计时 -->
+    <section class="view" id="view-projects" aria-label="项目正计时">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">⏱️</span> 项目正计时</h1>
+          <p class="view-sub">同时记录多个项目的持续时间和阶段进展</p>
+        </div>
+        <div class="view-actions">
+          <button class="btn btn-progress" id="project-add-btn">＋ 新增项目</button>
         </div>
       </div>
-      <div class="project-header-actions">
-        <button class="btn btn-progress" id="project-add-btn">+ 新增项目</button>
-      </div>
-    </header>
-    <div class="project-body" id="project-content"></div>
-  </section>
+      <div id="project-content"></div>
+    </section>
+  </main>
 </div>
+
 
 <div class="modal hidden" id="modal">
   <div class="modal-content">
@@ -362,7 +470,7 @@ input,textarea,select{font:inherit;color:inherit}
           <label>类型</label>
           <div class="type-selector">
             <input type="radio" name="type" id="t-once" value="once" checked>
-            <label for="t-once">📌 一次性</label>
+            <label for="t-once">📌 备忘录</label>
             <input type="radio" name="type" id="t-daily" value="daily">
             <label for="t-daily">☀️ 每日</label>
             <input type="radio" name="type" id="t-weekly" value="weekly">
@@ -520,16 +628,61 @@ input,textarea,select{font:inherit;color:inherit}
   </div>
 </div>
 
-<!-- In-page alert banner (for when page is in foreground) -->
+<!-- In-page alert banner (enhanced, for when page is in foreground) -->
 <div class="alert-banner" id="alert-banner" hidden>
-  <div class="alert-bell">🔔</div>
-  <div class="alert-body">
-    <div class="alert-title" id="alert-title">待办提醒</div>
-    <div class="alert-text" id="alert-text"></div>
+  <div class="alert-main">
+    <div class="alert-bell">🔔</div>
+    <div class="alert-body">
+      <div class="alert-title" id="alert-title"><span class="alert-tag">待办提醒</span><span id="alert-title-text"></span></div>
+      <div class="alert-text" id="alert-text"></div>
+    </div>
+    <button class="alert-close" id="alert-close" aria-label="关闭">✕</button>
   </div>
-  <button class="alert-action" id="alert-action">查看</button>
-  <button class="alert-close" id="alert-close" aria-label="关闭">✕</button>
+  <div class="alert-actions">
+    <button class="alert-btn alert-btn-primary" id="alert-view">📋 查看</button>
+    <button class="alert-btn alert-btn-soft" id="alert-done">✓ 完成</button>
+    <button class="alert-btn alert-btn-ghost" id="alert-snooze">⏰ 5分钟后</button>
+  </div>
   <div class="alert-progress" id="alert-progress"></div>
+</div>
+
+<!-- Settings modal (sound & notification) -->
+<div class="modal hidden" id="settings-modal">
+  <div class="modal-content settings-modal">
+    <div class="modal-header">
+      <h2>⚙️ 设置</h2>
+      <button class="icon-btn" id="settings-close" aria-label="关闭">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="setting-row">
+        <div class="setting-label">🔔 提示音</div>
+        <div class="setting-desc">选择到点提醒时播放的提示音（每种均超过 2 秒）</div>
+        <div class="sound-select-wrap">
+          <select id="sound-select" aria-label="选择提示音">
+            <option value="chime">柔和钟声 · 三连音</option>
+            <option value="dingdong">清脆叮咚 · 双声</option>
+            <option value="melody">上行旋律 · 五音琶音</option>
+            <option value="electronic">电子提示 · 三连短音</option>
+            <option value="chord">和弦长鸣 · 持续和弦</option>
+          </select>
+          <button type="button" class="btn-listen" id="sound-listen">▶ 试听</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">💬 系统通知</div>
+        <div class="setting-desc">开启后，提醒会在电脑系统桌面右上角弹出通知（即使浏览器在后台也会显示）</div>
+        <div class="perm-status" id="perm-status-wrap">
+          <span class="perm-dot default" id="perm-dot"></span>
+          <span id="perm-status-text">检测中…</span>
+        </div>
+        <button type="button" class="btn-enable-notif" id="enable-notif-btn">开启系统通知</button>
+        <button type="button" class="btn-test-notif" id="test-notif-btn">发送测试通知</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-ghost" id="settings-cancel">关闭</button>
+    </div>
+  </div>
 </div>
 
 <input type="file" id="import-file" accept="application/json,.json" hidden>
@@ -541,6 +694,8 @@ input,textarea,select{font:inherit;color:inherit}
   const KEY = 'todo-app-v1';
   const PENDING_SYNC_KEY = 'todo-pending-file-sync-v1';
   const TIMEZONE_KEY = 'todo-timezone-v1';
+  const VIEW_KEY = 'todo-view-v1';
+  const SOUND_KEY = 'todo-sound-v1';
   const TIMEZONES = {
     china: { country:'中国', capital:'北京', timeZone:'Asia/Shanghai' },
     usa:   { country:'美国', capital:'华盛顿特区', timeZone:'America/New_York' }
@@ -769,6 +924,12 @@ input,textarea,select{font:inherit;color:inherit}
       capitalTime.title = config.capital+'时间（'+config.timeZone+'）';
     }
     if(date) date.textContent = values.year+'年'+values.month+'月'+values.day+'日 · '+wdName(values.weekday);
+    const greetEl = document.getElementById('home-greeting');
+    if(greetEl){
+      const h = values.hour;
+      const greet = h<5 ? '夜深了' : h<11 ? '早上好' : h<13 ? '中午好' : h<18 ? '下午好' : '晚上好';
+      greetEl.textContent = greet+'，云帆';
+    }
   }
   function today(date){
     return wallDateKey(zonedNowParts(date));
@@ -855,24 +1016,82 @@ input,textarea,select{font:inherit;color:inherit}
     return s;
   }
   const TYPE_META = {
-    once:   {label:'一次性',     sub:'',           icon:'📌'},
+    once:   {label:'备忘录',     sub:'',           icon:'📌'},
     daily:  {label:'每日待办',   sub:'今日进度',   icon:'☀️'},
     weekly: {label:'每周待办',   sub:'本周进度',   icon:'📅'},
     monthly:{label:'每月待办',   sub:'本月进度',   icon:'🗓️'},
     annual: {label:'每年待办',   sub:'今年进度',   icon:'🎂'}
   };
+  const TYPE_SHORT = {once:'备忘',daily:'每日',weekly:'每周',monthly:'每月',annual:'每年'};
+  function todayItems(){
+    const td = today();
+    const wd = zonedNowParts().weekday;
+    const items = [];
+    for(const x of state.todos){
+      if(x.type==='daily') items.push(x);
+      else if(x.type==='once' && x.dueDate && x.dueDate<=td && !x.completed) items.push(x);
+      else if(x.type==='weekly' && (x.weekDay==null?1:x.weekDay)===wd) items.push(x);
+      else if(x.type==='monthly' && (x.monthDay||1)===Number(td.slice(8,10))) items.push(x);
+      else if(x.type==='annual' && (x.annualMonth||1)===Number(td.slice(5,7)) && (x.annualDay||1)===Number(td.slice(8,10))) items.push(x);
+    }
+    return items.sort(sortTodos);
+  }
   function renderOverview(){
     const s = stats();
-    const ov = document.getElementById('overview');
-    ov.innerHTML = ['once','daily','weekly','monthly','annual'].map(k=>{
-      const m = TYPE_META[k], v = s[k];
-      return '<div class="stat-card">'
-        + '<div class="stat-icon '+k+'">'+m.icon+'</div>'
-        + '<div class="stat-text">'
-        +   '<span class="stat-label">'+m.label+(m.sub?' · '+m.sub:'')+'</span>'
-        +   '<span class="stat-value">'+v.d+'<span class="sub"> / '+v.t+'</span></span>'
-        + '</div></div>';
-    }).join('');
+    ['once','daily','weekly','monthly','annual'].forEach(k=>{
+      const el = document.getElementById('navcount-'+k);
+      if(el) el.textContent = s[k].t;
+    });
+    const tdk = state.todos.filter(t=>t.type==='daily' || (t.type==='once' && t.dueDate && t.dueDate<=today()));
+    const doneN = tdk.filter(isDone).length;
+    const pct = tdk.length ? Math.round(doneN/tdk.length*100) : 0;
+    const memo = state.todos.filter(t=>t.type==='once' && !t.completed && t.dueDate)
+      .sort((a,b)=>a.dueDate.localeCompare(b.dueDate)).slice(0,3);
+    const memoHTML = memo.length ? memo.map(t=>{
+      const ov = isOverdue(t);
+      return '<div class="dash-line'+(ov?' overdue':'')+'"><span>'+esc(t.title)+'</span><span class="dash-date">'+friendlyDate(t.dueDate)+'</span></div>';
+    }).join('') : '<div class="dash-note">没有临近事项，很清爽 👌</div>';
+    const proj = state.projects.slice(0,3);
+    const projHTML = proj.length ? proj.map(p=>{
+      const days = Math.max(0, dayDiff(p.startDate, today()));
+      return '<div class="dash-line"><span>'+esc(p.name)+'</span><span class="dash-date">'+days+' 天</span></div>';
+    }).join('') : '<div class="dash-note">还没有开始的项目</div>';
+    const dash = document.getElementById('dash-grid');
+    if(dash) dash.innerHTML =
+      '<button class="dash-card mint" data-goto="daily">'
+      + '<span class="dash-label">今日待办</span>'
+      + '<span class="dash-value">'+doneN+'<span class="dash-sub"> / '+tdk.length+'</span></span>'
+      + '<span class="dash-progress"><i style="width:'+pct+'%"></i></span>'
+      + '<span class="dash-note">今日完成 '+pct+'%</span></button>'
+      + '<button class="dash-card pink" data-goto="once">'
+      + '<span class="dash-label">备忘录</span>'
+      + '<span class="dash-value">'+(s.once.t-s.once.d)+'<span class="dash-sub"> 件未完成</span></span>'
+      + '<span class="dash-lines">'+memoHTML+'</span></button>'
+      + '<button class="dash-card amber" data-goto="projects">'
+      + '<span class="dash-label">项目正计时</span>'
+      + '<span class="dash-value">'+state.projects.length+'<span class="dash-sub"> 个进行中</span></span>'
+      + '<span class="dash-lines">'+projHTML+'</span></button>'
+      + '<button class="dash-card purple" data-goto="weekly">'
+      + '<span class="dash-label">本周 / 本月</span>'
+      + '<span class="dash-value">'+s.weekly.d+'<span class="dash-sub"> / '+s.weekly.t+' 周</span></span>'
+      + '<span class="dash-value small">'+s.monthly.d+'<span class="dash-sub"> / '+s.monthly.t+' 月</span></span>'
+      + '</button>';
+    const list = document.getElementById('today-list');
+    if(list){
+      const items = todayItems();
+      if(!items.length){
+        list.innerHTML = '<div class="today-empty">今天没有安排，喝杯茶吧 🍵</div>';
+      } else {
+        list.innerHTML = items.map(t=>{
+          const done = isDone(t);
+          return '<div class="today-item'+(done?' done':'')+'" data-todo-id="'+t.id+'">'
+            + '<span class="card-check" data-action="toggle" role="checkbox" aria-checked="'+done+'" tabindex="0"></span>'
+            + '<span class="ti-title">'+esc(t.title)+'</span>'
+            + '<span class="badge '+t.type+'">'+TYPE_META[t.type].icon+' '+TYPE_SHORT[t.type]+'</span>'
+            + '</div>';
+        }).join('');
+      }
+    }
   }
 
   // ====== Render cards ======
@@ -932,7 +1151,7 @@ input,textarea,select{font:inherit;color:inherit}
     return (b.createdAt||'').localeCompare(a.createdAt||'');
   }
   const EMPTY = {
-    once:   {e:'🌱', t:'还没有一次性待办', tip:'点右上 + 添加一个任务'},
+    once:   {e:'🌱', t:'备忘录还空着', tip:'点右上 ＋ 添加，记一件别忘的事'},
     daily:  {e:'☀️', t:'还没有每日习惯', tip:'加一个好习惯，每天打卡'},
     weekly: {e:'📅', t:'还没有每周计划', tip:'安排一些周节奏的待办'},
     monthly:{e:'🗓️', t:'还没有每月待办', tip:'比如交房租、复盘…'},
@@ -1062,7 +1281,10 @@ input,textarea,select{font:inherit;color:inherit}
   }
   function del(id){
     const t = state.todos.find(x=>x.id===id);
-    if(t && t.reminder && t.reminder.timeoutId) clearTimeout(t.reminder.timeoutId);
+    if(t && t.reminder){
+      if(t.reminder.timeoutId) clearTimeout(t.reminder.timeoutId);
+      if(t.reminder.snoozeTimeoutId) clearTimeout(t.reminder.snoozeTimeoutId);
+    }
     state.todos = state.todos.filter(x=>x.id!==id);
     save(); render();
     showToast('已删除');
@@ -1361,27 +1583,71 @@ input,textarea,select{font:inherit;color:inherit}
       return audioCtx;
     }catch(e){ return null; }
   }
-  function playNotificationSound(){
+
+  // 5 notification sounds, each >= 2 seconds, all synthesized via Web Audio (no audio files)
+  const SOUNDS = {
+    // 柔和钟声: C6(0.85s) -> E6(0.85s) -> G6(0.95s), total ~2.35s
+    chime: [
+      { freq: 1046.5, start: 0.00, dur: 0.85, vol: 0.22, type: 'sine' },
+      { freq: 1318.5, start: 0.70, dur: 0.85, vol: 0.22, type: 'sine' },
+      { freq: 1568.0, start: 1.40, dur: 0.95, vol: 0.24, type: 'sine' }
+    ],
+    // 清脆叮咚: 叮(1.05s) -> gap(0.2s) -> 咚(1.05s), total ~2.3s
+    dingdong: [
+      { freq: 880.0,  start: 0.00, dur: 1.05, vol: 0.24, type: 'triangle' },
+      { freq: 659.25, start: 1.25, dur: 1.05, vol: 0.24, type: 'triangle' }
+    ],
+    // 上行旋律: C5->D5->E5->G5->C6, each 0.5s, total ~2.45s
+    melody: [
+      { freq: 523.25, start: 0.00, dur: 0.50, vol: 0.20, type: 'sine' },
+      { freq: 587.33, start: 0.45, dur: 0.50, vol: 0.20, type: 'sine' },
+      { freq: 659.25, start: 0.90, dur: 0.50, vol: 0.20, type: 'sine' },
+      { freq: 783.99, start: 1.35, dur: 0.50, vol: 0.20, type: 'sine' },
+      { freq: 1046.5, start: 1.80, dur: 0.65, vol: 0.24, type: 'sine' }
+    ],
+    // 电子提示: three 880Hz beeps (0.55s each, 0.2s gap) + tail (0.75s), total ~2.8s
+    electronic: [
+      { freq: 880,  start: 0.00, dur: 0.55, vol: 0.18, type: 'square' },
+      { freq: 880,  start: 0.75, dur: 0.55, vol: 0.18, type: 'square' },
+      { freq: 880,  start: 1.50, dur: 0.55, vol: 0.18, type: 'square' },
+      { freq: 1320, start: 2.05, dur: 0.75, vol: 0.22, type: 'sine' }
+    ],
+    // 和弦长鸣: C4+E4+G4+C5 sustained chord with soft decay, total ~2.55s
+    chord: [
+      { freq: 261.63, start: 0.00, dur: 2.55, vol: 0.14, type: 'sine' },
+      { freq: 329.63, start: 0.00, dur: 2.55, vol: 0.14, type: 'sine' },
+      { freq: 392.00, start: 0.00, dur: 2.55, vol: 0.14, type: 'sine' },
+      { freq: 523.25, start: 0.00, dur: 2.55, vol: 0.10, type: 'sine' }
+    ]
+  };
+  function loadSoundPreference(){
+    try{
+      const s = localStorage.getItem(SOUND_KEY);
+      return SOUNDS[s] ? s : 'chime';
+    }catch(e){ return 'chime'; }
+  }
+  function saveSoundPreference(s){
+    try{ localStorage.setItem(SOUND_KEY, s); }catch(e){ /* ignore */ }
+  }
+  function playNotificationSound(soundKey){
+    const key = soundKey || loadSoundPreference();
+    const notes = SOUNDS[key] || SOUNDS.chime;
     const ctx = getAudioContext();
     if(!ctx) return;
     try{
-      const t0 = ctx.currentTime + 0.02;
-      // Soft two-tone chime: E6 -> G6
-      const notes = [
-        { freq: 1318.5, start: 0,    dur: 0.32, vol: 0.22 },
-        { freq: 1568,   start: 0.22, dur: 0.55, vol: 0.22 }
-      ];
+      const t0 = ctx.currentTime + 0.03;
       notes.forEach(n => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.type = 'sine';
+        osc.type = n.type || 'sine';
         osc.frequency.setValueAtTime(n.freq, t0 + n.start);
         gain.gain.setValueAtTime(0, t0 + n.start);
-        gain.gain.linearRampToValueAtTime(n.vol, t0 + n.start + 0.015);
+        gain.gain.linearRampToValueAtTime(n.vol, t0 + n.start + 0.02);
+        gain.gain.setValueAtTime(n.vol, t0 + n.start + n.dur * 0.5);
         gain.gain.exponentialRampToValueAtTime(0.0001, t0 + n.start + n.dur);
         osc.connect(gain); gain.connect(ctx.destination);
         osc.start(t0 + n.start);
-        osc.stop(t0 + n.start + n.dur + 0.02);
+        osc.stop(t0 + n.start + n.dur + 0.03);
       });
     }catch(e){ console.warn('sound failed', e); }
   }
@@ -1399,46 +1665,75 @@ input,textarea,select{font:inherit;color:inherit}
     catch(e){ return Promise.resolve('denied'); }
   }
 
-  // Show a system notification (only when page is in background, or as supplementary)
+  // Show a system notification — always attempt, so the OS notification center shows it
+  // even when the page is in the foreground (browser may still suppress, but we try).
   function showSystemNotification(todo){
     if(notifPerm() !== 'granted') return;
     try{
-      const n = new Notification('待办提醒 · '+todo.title, {
-        body: todo.description || '点击查看',
+      const n = new Notification('🔔 待办提醒 · ' + todo.title, {
+        body: todo.description || (todo.type==='once'?(todo.dueDate||'到点啦'):'该去打卡啦'),
         tag: 'todo-'+todo.id,
+        icon: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📝</text></svg>'),
         requireInteraction: true,
         silent: false
       });
-      n.onclick = () => { window.focus(); n.close(); };
+      n.onclick = () => { window.focus(); n.close(); openModal(null, todo.id); };
+      // Auto-close after 30s if user hasn't interacted (some browsers keep it otherwise)
+      setTimeout(()=>{ try{ n.close(); }catch(e){} }, 30000);
     }catch(e){ /* ignore */ }
   }
 
-  // In-page alert banner (always shown, since foreground suppresses system notifications)
+  // In-page alert banner (enhanced — always shown, with snooze & done actions)
   let alertDismissT = null;
+  let alertCurrentTodo = null;
   function showInPageBanner(todo){
     const banner = document.getElementById('alert-banner');
-    const titleEl = document.getElementById('alert-title');
+    const titleText = document.getElementById('alert-title-text');
     const textEl = document.getElementById('alert-text');
-    const actionBtn = document.getElementById('alert-action');
+    alertCurrentTodo = todo;
+    titleText.textContent = todo.title;
+    textEl.textContent = todo.description || (todo.type==='once'?(todo.dueDate||'今天到点啦'):'该去打卡啦');
+    // restart progress animation
     const progress = document.getElementById('alert-progress');
-    titleEl.textContent = '待办提醒 · '+todo.title;
-    textEl.textContent = todo.description || (todo.type==='once'?(todo.dueDate||'今天'):'该去打卡啦');
-    // restart animation
     progress.style.animation = 'none';
     void progress.offsetWidth;
     progress.style.animation = '';
     banner.hidden = false;
     requestAnimationFrame(()=> banner.classList.add('show'));
-    actionBtn.onclick = () => { dismissAlert(); openModal(null, todo.id); };
+    document.getElementById('alert-view').onclick = () => { dismissAlert(); openModal(null, todo.id); };
+    document.getElementById('alert-done').onclick = () => {
+      const t = state.todos.find(x => x.id === todo.id);
+      if(t){ t.completed = true; t.completedAt = new Date().toISOString(); save(); render(); }
+      dismissAlert();
+      showToast('已标记完成 ✓');
+    };
+    document.getElementById('alert-snooze').onclick = () => { snoozeReminder(todo); };
     clearTimeout(alertDismissT);
-    alertDismissT = setTimeout(dismissAlert, 12000);
+    alertDismissT = setTimeout(dismissAlert, 15000);
   }
   function dismissAlert(){
     const banner = document.getElementById('alert-banner');
     if(!banner || banner.hidden) return;
     banner.classList.remove('show');
-    setTimeout(()=>{ banner.hidden = true; }, 350);
+    setTimeout(()=>{ banner.hidden = true; }, 360);
     clearTimeout(alertDismissT);
+  }
+  // Snooze: re-fire the reminder in 5 minutes
+  function snoozeReminder(todo){
+    const t = state.todos.find(x => x.id === todo.id);
+    if(!t){ dismissAlert(); return; }
+    if(!t.reminder) t.reminder = { time: '09:00', enabled: true };
+    t.reminder.lastFiredPeriod = null; // allow re-fire for this period
+    dismissAlert();
+    showToast('⏰ 已稍后提醒（5分钟后）');
+    // Schedule a one-off 5-minute timer
+    if(t.reminder.snoozeTimeoutId) clearTimeout(t.reminder.snoozeTimeoutId);
+    t.reminder.snoozeTimeoutId = setTimeout(()=>{
+      playNotificationSound();
+      showSystemNotification(t);
+      showInPageBanner(t);
+      t.reminder.snoozeTimeoutId = null;
+    }, 5 * 60 * 1000);
   }
 
   // Compute the next datetime a reminder should fire for a given todo
@@ -1535,9 +1830,15 @@ input,textarea,select{font:inherit;color:inherit}
   // Used when the state is wholesale replaced (e.g. import).
   function clearAllReminderTimeouts(){
     for(const t of state.todos){
-      if(t.reminder && t.reminder.timeoutId){
-        clearTimeout(t.reminder.timeoutId);
-        t.reminder.timeoutId = null;
+      if(t.reminder){
+        if(t.reminder.timeoutId){
+          clearTimeout(t.reminder.timeoutId);
+          t.reminder.timeoutId = null;
+        }
+        if(t.reminder.snoozeTimeoutId){
+          clearTimeout(t.reminder.snoozeTimeoutId);
+          t.reminder.snoozeTimeoutId = null;
+        }
       }
     }
   }
@@ -1668,14 +1969,67 @@ input,textarea,select{font:inherit;color:inherit}
     if(!reminderTodoId) return;
     const todo = state.todos.find(t => t.id === reminderTodoId);
     if(!todo) return;
-    if(todo.reminder && todo.reminder.timeoutId){
-      clearTimeout(todo.reminder.timeoutId);
+    if(todo.reminder){
+      if(todo.reminder.timeoutId) clearTimeout(todo.reminder.timeoutId);
+      if(todo.reminder.snoozeTimeoutId) clearTimeout(todo.reminder.snoozeTimeoutId);
     }
     todo.reminder = null;
     save();
     render();
     closeReminderModal();
     showToast('提醒已清除');
+  }
+
+  // ====== Settings modal (sound & notification) ======
+  function openSettingsModal(){
+    const sel = document.getElementById('sound-select');
+    sel.value = loadSoundPreference();
+    updatePermStatus();
+    // Initialize Audio on this user gesture so sounds can play later
+    getAudioContext();
+    document.getElementById('settings-modal').classList.remove('hidden');
+  }
+  function closeSettingsModal(){
+    document.getElementById('settings-modal').classList.add('hidden');
+  }
+  function updatePermStatus(){
+    const dot = document.getElementById('perm-dot');
+    const text = document.getElementById('perm-status-text');
+    const enableBtn = document.getElementById('enable-notif-btn');
+    const testBtn = document.getElementById('test-notif-btn');
+    const perm = notifPerm();
+    dot.className = 'perm-dot ' + (perm === 'granted' ? 'granted' : perm === 'denied' ? 'denied' : 'default');
+    if(perm === 'unsupported'){
+      text.textContent = '当前浏览器不支持系统通知（仅播放声音和页面横幅）';
+      enableBtn.hidden = true;
+      testBtn.hidden = true;
+    } else if(perm === 'granted'){
+      text.textContent = '系统通知已开启 · 提醒会在电脑桌面右上角弹出';
+      enableBtn.hidden = true;
+      testBtn.hidden = false;
+    } else if(perm === 'denied'){
+      text.textContent = '系统通知已被拒绝 · 请在浏览器偏好设置中允许本站点通知';
+      enableBtn.hidden = true;
+      testBtn.hidden = true;
+    } else {
+      text.textContent = '系统通知未开启 · 点击下方按钮授权';
+      enableBtn.hidden = false;
+      testBtn.hidden = true;
+    }
+  }
+  function listenSelectedSound(){
+    const sel = document.getElementById('sound-select');
+    const btn = document.getElementById('sound-listen');
+    const key = sel.value || 'chime';
+    saveSoundPreference(key);
+    btn.classList.add('playing');
+    btn.textContent = '♪ 播放中…';
+    playNotificationSound(key);
+    // Reset button text after the sound finishes (chord is the longest at ~2.55s)
+    setTimeout(()=>{
+      btn.classList.remove('playing');
+      btn.textContent = '▶ 试听';
+    }, 3000);
   }
 
   // ====== Events ======
@@ -1692,6 +2046,45 @@ input,textarea,select{font:inherit;color:inherit}
       checkMissedReminders();
       showToast('已切换至'+activeTimezone().capital+'时间，提醒已重新排程');
     });
+    // View switching (sidebar)
+    function switchView(name){
+      const valid = ['home','once','daily','weekly','monthly','annual','projects'];
+      if(valid.indexOf(name)<0) name = 'home';
+      document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+name));
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===name));
+      try{ localStorage.setItem(VIEW_KEY, name); }catch(e){}
+      try{ history.replaceState(null, '', '#'+name); }catch(e){}
+      window.scrollTo({top:0});
+    }
+    document.querySelectorAll('.nav-item').forEach(n=>{
+      n.addEventListener('click', ()=>switchView(n.dataset.view));
+    });
+    const dashGrid = document.getElementById('dash-grid');
+    if(dashGrid) dashGrid.addEventListener('click', e=>{
+      const go = e.target.closest('[data-goto]');
+      if(go) switchView(go.dataset.goto);
+    });
+    const todayListBox = document.getElementById('today-list');
+    if(todayListBox){
+      todayListBox.addEventListener('click', e=>{
+        const item = e.target.closest('[data-todo-id]');
+        if(!item) return;
+        if(e.target.closest('[data-action="toggle"]')){ toggle(item.dataset.todoId); return; }
+        const todo = state.todos.find(x=>x.id===item.dataset.todoId);
+        if(todo) switchView(todo.type);
+      });
+      todayListBox.addEventListener('keydown', e=>{
+        if((e.key===' '||e.key==='Enter') && e.target.classList.contains('card-check')){
+          e.preventDefault();
+          const item = e.target.closest('[data-todo-id]');
+          if(item) toggle(item.dataset.todoId);
+        }
+      });
+    }
+    let savedView = null;
+    try{ savedView = localStorage.getItem(VIEW_KEY); }catch(e){}
+    switchView(location.hash.replace('#','') || savedView || 'home');
+
     document.getElementById('new-btn').addEventListener('click', ()=>openModal('once'));
     document.querySelectorAll('.add-btn').forEach(b=>{
       b.addEventListener('click', ()=>openModal(b.dataset.type));
@@ -1810,18 +2203,50 @@ input,textarea,select{font:inherit;color:inherit}
     // Alert banner
     document.getElementById('alert-close').addEventListener('click', dismissAlert);
 
+    // Settings modal events
+    document.getElementById('settings-btn').addEventListener('click', openSettingsModal);
+    document.getElementById('settings-close').addEventListener('click', closeSettingsModal);
+    document.getElementById('settings-cancel').addEventListener('click', closeSettingsModal);
+    document.getElementById('settings-modal').addEventListener('click', e=>{
+      if(e.target.id==='settings-modal') closeSettingsModal();
+    });
+    document.getElementById('sound-select').addEventListener('change', e=>{
+      saveSoundPreference(e.target.value);
+    });
+    document.getElementById('sound-listen').addEventListener('click', listenSelectedSound);
+    document.getElementById('enable-notif-btn').addEventListener('click', async ()=>{
+      const result = await requestNotifPerm();
+      updatePermStatus();
+      if(result === 'granted') showToast('系统通知已开启 ✓');
+      else if(result === 'denied') showToast('系统通知被拒绝，请在浏览器设置中开启');
+    });
+    document.getElementById('test-notif-btn').addEventListener('click', ()=>{
+      if(notifPerm() !== 'granted'){ showToast('请先开启系统通知'); return; }
+      try{
+        const n = new Notification('🔔 测试通知', {
+          body: '系统通知工作正常！提醒到点时会在此弹出',
+          icon: "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">📝</text></svg>')
+        });
+        n.onclick = () => { window.focus(); n.close(); };
+        setTimeout(()=>{ try{ n.close(); }catch(e){} }, 8000);
+        showToast('已发送测试通知');
+      }catch(e){ showToast('测试通知发送失败'); }
+    });
+
     // Global shortcuts
     document.addEventListener('keydown', e=>{
       const modalOpen = !document.getElementById('modal').classList.contains('hidden');
       const reminderOpen = !document.getElementById('reminder-modal').classList.contains('hidden');
       const projectModalOpen = !document.getElementById('project-modal').classList.contains('hidden');
       const milestoneModalOpen = !document.getElementById('milestone-modal').classList.contains('hidden');
+      const settingsOpen = !document.getElementById('settings-modal').classList.contains('hidden');
+      if(e.key==='Escape' && settingsOpen){ closeSettingsModal(); return; }
       if(e.key==='Escape' && reminderOpen){ closeReminderModal(); return; }
       if(e.key==='Escape' && milestoneModalOpen){ closeMilestoneModal(); return; }
       if(e.key==='Escape' && projectModalOpen){ closeProjectModal(); return; }
       if(e.key==='Escape' && modalOpen){ closeModal(); return; }
       const inField = e.target.matches('input,textarea,select');
-      const anyModalOpen = modalOpen || reminderOpen || projectModalOpen || milestoneModalOpen;
+      const anyModalOpen = modalOpen || reminderOpen || projectModalOpen || milestoneModalOpen || settingsOpen;
       if(!inField && !anyModalOpen && (e.key==='n'||e.key==='N')){
         e.preventDefault(); openModal('once');
       }
