@@ -303,6 +303,46 @@ input,textarea,select{font:inherit;color:inherit}
   .dash-grid{grid-template-columns:1fr 1fr}
   .cards{grid-template-columns:1fr}
 }
+
+/* ===== Calendar week view ===== */
+.cal-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.cal-toolbar{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cal-toolbar .btn{padding:6px 12px;font-size:13px}
+.cal-range{font-size:15px;font-weight:650;margin-left:2px;min-width:0}
+.cal-count-badge{font-size:11px;font-weight:600;color:var(--text-2);background:var(--card-2);border:1px solid var(--border);padding:2px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+.cal-seg{margin-left:auto;display:flex;background:var(--card-2);border:1px solid var(--border-strong);border-radius:10px;overflow:hidden}
+.cal-seg button{padding:6px 16px;font-size:13px;color:var(--text-2)}
+.cal-seg button.on{background:var(--primary-soft);color:var(--primary);font-weight:600}
+.cal-seg button:disabled{opacity:.4;cursor:not-allowed}
+.cal-scroll{overflow:auto;max-height:calc(100vh - 220px)}
+.cal-grid{display:grid;grid-template-columns:54px repeat(7,minmax(92px,1fr));min-width:680px}
+.cal-head{display:grid;grid-template-columns:54px repeat(7,minmax(92px,1fr));position:sticky;top:0;z-index:2;background:var(--card);border-bottom:1px solid var(--border)}
+.cal-head>div{padding:7px 4px;text-align:center}
+.cal-head .dow{font-size:11px;color:var(--text-3)}
+.cal-head .dom{font-size:16px;font-weight:650;line-height:1.2}
+.cal-head .today{background:var(--primary-soft)}
+.cal-head .today .dow,.cal-head .today .dom{color:var(--primary)}
+.cal-allday{display:grid;grid-template-columns:54px repeat(7,minmax(92px,1fr));border-bottom:1px solid var(--border);background:var(--card-2)}
+.cal-allday .label{font-size:10px;color:var(--text-3);display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
+.cal-allday-cell{border-left:1px solid var(--border);padding:3px;display:flex;flex-direction:column;gap:2px;align-items:stretch}
+.cal-allday-chip{width:100%;font-size:10.5px;line-height:1.4;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;cursor:pointer;text-align:left}
+.cal-allday-chip.done{opacity:.5;text-decoration:line-through}
+.cal-body{display:grid;grid-template-columns:54px repeat(7,minmax(92px,1fr))}
+.cal-gutter{position:relative}
+.cal-hour{height:48px;text-align:right;padding:2px 6px 0 0;font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums}
+.cal-day{position:relative;border-left:1px solid var(--border);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,var(--border) 47px,var(--border) 48px);cursor:crosshair}
+.cal-day.today{background-color:rgba(15,118,110,.035)}
+.cal-evt{position:absolute;left:3px;right:3px;height:22px;border-radius:6px;padding:2px 6px;font-size:11px;line-height:18px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-left:3px solid;cursor:pointer;transition:transform var(--t)}
+.cal-evt.done{opacity:.55;text-decoration:line-through}
+.cal-evt:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+.cal-now{position:absolute;left:0;right:0;height:2px;background:var(--danger);z-index:3}
+.cal-now::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;background:var(--danger);border-radius:50%}
+.ev-color-row{display:grid;grid-template-columns:repeat(10,30px);gap:8px;justify-content:start}
+.ev-swatch{width:30px;height:30px;border-radius:9px;border:2px solid;cursor:pointer;transition:all var(--t);padding:0}
+.ev-swatch:hover{transform:translateY(-1px)}
+.ev-swatch.on{outline:2.5px solid var(--text-1);outline-offset:2px}
+.cal-empty{padding:20px;text-align:center;color:var(--text-3);font-size:12.5px}
+@media(max-width:860px){.cal-scroll{max-height:none}}
 </style>
 </head>
 <body>
@@ -317,6 +357,7 @@ input,textarea,select{font:inherit;color:inherit}
     </div>
     <nav class="nav" aria-label="板块导航">
       <button class="nav-item active" data-view="home"><span class="nav-icon" aria-hidden="true">🏠</span><span class="nav-label">首页</span></button>
+      <button class="nav-item" data-view="calendar"><span class="nav-icon" aria-hidden="true">🗓️</span><span class="nav-label">日历</span><span class="nav-count" id="navcount-calendar">0</span></button>
       <button class="nav-item" data-view="once"><span class="nav-icon" aria-hidden="true">📌</span><span class="nav-label">备忘录</span><span class="nav-count" id="navcount-once">0</span></button>
       <button class="nav-item" data-view="daily"><span class="nav-icon" aria-hidden="true">☀️</span><span class="nav-label">每日待办</span><span class="nav-count" id="navcount-daily">0</span></button>
       <button class="nav-item" data-view="weekly"><span class="nav-icon" aria-hidden="true">📅</span><span class="nav-label">每周待办</span><span class="nav-count" id="navcount-weekly">0</span></button>
@@ -364,6 +405,38 @@ input,textarea,select{font:inherit;color:inherit}
         <h3 class="today-title">今日速览 <span class="today-sub">点圆圈打卡 · 点文字进入板块</span></h3>
         <div class="today-list" id="today-list"></div>
       </div>
+    </section>
+
+    <!-- 日历 · 周视图 -->
+    <section class="view" id="view-calendar" aria-label="日历">
+      <div class="view-head">
+        <div>
+          <h1 class="view-title"><span aria-hidden="true">🗓️</span> 日历</h1>
+          <p class="view-sub">按周排程，点空白格快速创建日程</p>
+        </div>
+        <div class="view-actions">
+          <span class="panel-count" id="cal-count">0</span>
+        </div>
+      </div>
+      <div class="cal-wrap">
+        <div class="cal-toolbar">
+          <button class="btn btn-ghost" id="cal-today" title="回到本周">今天</button>
+          <button class="btn btn-ghost" id="cal-prev" title="上一周">‹</button>
+          <button class="btn btn-ghost" id="cal-next" title="下一周">›</button>
+          <span class="cal-range" id="cal-range"></span>
+          <div class="cal-seg" id="cal-seg">
+            <button disabled>日</button>
+            <button class="on">周</button>
+            <button disabled>月</button>
+          </div>
+        </div>
+        <div class="cal-head" id="cal-head"></div>
+        <div class="cal-allday" id="cal-allday"></div>
+        <div class="cal-scroll">
+          <div class="cal-body" id="cal-body"></div>
+        </div>
+      </div>
+      <p class="cal-empty" id="cal-empty" style="display:none">本周还没有日程，点日历空白处即可创建</p>
     </section>
 
     <!-- 备忘录（原一次性待办） -->
@@ -688,6 +761,56 @@ input,textarea,select{font:inherit;color:inherit}
 <input type="file" id="import-file" accept="application/json,.json" hidden>
 <div class="toast" id="toast"></div>
 
+<!-- 日程新增/编辑弹窗 -->
+<div class="modal hidden" id="event-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="event-modal-title">新建日程</h2>
+      <button type="button" class="icon-btn" id="event-close" aria-label="关闭">✕</button>
+    </div>
+    <form id="event-form">
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="ev-title">标题 <span class="req">*</span></label>
+          <input type="text" id="ev-title" name="evTitle" maxlength="80" placeholder="日程名称" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>日期 <span class="req">*</span> <span class="hint">结束日期可不填；跨天日程会显示在区间每一天</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" id="ev-date" name="evDate" style="flex:1">
+            <span style="color:var(--text-3)">–</span>
+            <input type="date" id="ev-end-date" name="evEndDate" style="flex:1">
+          </div>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" id="ev-all-day" name="evAllDay" style="width:auto;margin-right:6px">全天日程</label>
+        </div>
+        <div class="form-group" id="ev-time-group">
+          <label for="ev-start">时间 <span class="hint">按当前时区，可滚动选择或直接输入</span></label>
+          <input type="time" id="ev-start" name="evStart">
+        </div>
+        <div class="form-group">
+          <label>颜色</label>
+          <input type="hidden" id="ev-color" name="evColor" value="teal">
+          <div class="ev-color-row" id="ev-color-row"></div>
+        </div>
+        <div class="form-group">
+          <label><input type="checkbox" id="ev-reminder" name="evReminder" style="width:auto;margin-right:6px">到点提醒</label>
+        </div>
+        <div class="form-group" id="ev-reminder-min-group">
+          <label for="ev-reminder-min">提前提醒（分钟）</label>
+          <input type="number" id="ev-reminder-min" name="evReminderMin" min="0" max="1440" step="5" value="10" style="width:120px">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" id="event-delete-btn">删除</button>
+        <button type="button" class="btn btn-ghost" id="event-cancel">取消</button>
+        <button type="submit" class="btn btn-primary">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 (function(){
   'use strict';
@@ -703,7 +826,7 @@ input,textarea,select{font:inherit;color:inherit}
   const ZONED_FORMATTERS = {};
   const MAX_TIMER_DELAY = 2147480000;
   const API_ROOT = location.protocol === 'file:' ? 'http://127.0.0.1:8765' : '';
-  let state = { todos: [], projects: [] };
+  let state = { todos: [], projects: [], events: [] };
   let editingId = null;
   let editingProjectId = null;
   let milestoneProjectId = null;
@@ -744,7 +867,7 @@ input,textarea,select{font:inherit;color:inherit}
     return source.map(normalizeProject).filter(Boolean);
   }
   function cachePendingState(snapshot){
-    localStorage.setItem(KEY, snapshot || JSON.stringify({version:3, todos:state.todos, projects:state.projects}));
+    localStorage.setItem(KEY, snapshot || JSON.stringify({version:3, todos:state.todos, projects:state.projects, events:state.events}));
     localStorage.setItem(PENDING_SYNC_KEY, '1');
   }
   async function load(){
@@ -759,7 +882,8 @@ input,textarea,select{font:inherit;color:inherit}
         const parsed = raw ? JSON.parse(raw) : null;
         if(parsed && Array.isArray(parsed.todos)) browserState = {
           todos: parsed.todos,
-          projects: normalizeProjects(parsed.projects, parsed.projectTimer)
+          projects: normalizeProjects(parsed.projects, parsed.projectTimer),
+          events: Array.isArray(parsed.events) ? parsed.events : []
         };
       }catch(e){ /* Ignore an invalid old browser cache. */ }
 
@@ -769,7 +893,8 @@ input,textarea,select{font:inherit;color:inherit}
       if(Number(stored.version || 1) < 3){
         state = hasPendingSync && browserState ? browserState : {
           todos: stored.todos,
-          projects: normalizeProjects(stored.projects, stored.projectTimer)
+          projects: normalizeProjects(stored.projects, stored.projectTimer),
+          events: Array.isArray(stored.events) ? stored.events : []
         };
         storageMode = 'browser-fallback';
         storageFallbackMessage = '请重启应用以启用多项目本机保存，当前修改会临时保留';
@@ -781,11 +906,11 @@ input,textarea,select{font:inherit;color:inherit}
         localStorage.removeItem(PENDING_SYNC_KEY);
       // First launch after the upgrade: move old browser data into the local file.
       } else if(!stored.exists && browserState){
-        state = {todos: browserState.todos, projects:browserState.projects};
+        state = {todos: browserState.todos, projects:browserState.projects, events: browserState.events};
         await persist();
         localStorage.removeItem(KEY);
       } else if(Array.isArray(stored.todos)) {
-        state = {todos: stored.todos, projects:normalizeProjects(stored.projects, stored.projectTimer)};
+        state = {todos: stored.todos, projects:normalizeProjects(stored.projects, stored.projectTimer), events: Array.isArray(stored.events) ? stored.events : []};
       }
     }catch(e){
       // Keep the app usable if someone opens index.html directly instead of using
@@ -796,7 +921,8 @@ input,textarea,select{font:inherit;color:inherit}
         const parsed = raw ? JSON.parse(raw) : null;
         if(parsed && Array.isArray(parsed.todos)) state = {
           todos: parsed.todos,
-          projects: normalizeProjects(parsed.projects, parsed.projectTimer)
+          projects: normalizeProjects(parsed.projects, parsed.projectTimer),
+          events: Array.isArray(parsed.events) ? parsed.events : []
         };
       }catch(err){ console.warn('load failed', err); }
       try{ cachePendingState(); }
@@ -805,7 +931,7 @@ input,textarea,select{font:inherit;color:inherit}
     }
   }
   function save(){
-    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects});
+    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects, events:state.events});
     saveQueue = saveQueue.then(async () => {
       if(storageMode === 'browser-fallback'){
         cachePendingState(snapshot);
@@ -825,7 +951,7 @@ input,textarea,select{font:inherit;color:inherit}
     });
   }
   async function persist(){
-    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects});
+    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects, events:state.events});
     const response = await fetch(API_ROOT+'/api/state', {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
@@ -1263,9 +1389,351 @@ input,textarea,select{font:inherit;color:inherit}
     renderOverview();
     ['once','daily','weekly','monthly','annual'].forEach(renderSection);
     renderProjectTracker();
+    renderCalendar();
   }
 
-  // ====== Actions ======
+  // ====== Calendar (week view + events) ======
+  const CAL_START_HOUR = 6;
+  const CAL_END_HOUR = 24;
+  const CAL_HOUR_H = 48;
+  const CAL_EVENT_H = 22;
+  const CAL_COLORS = [
+    {key:'teal',    label:'薄荷',   bg:'#dff2ea', fg:'#0f766e', border:'#0f766e'},
+    {key:'blue',    label:'雾蓝',   bg:'#e3edfa', fg:'#2f6cb3', border:'#3f7dcc'},
+    {key:'indigo',  label:'靛蓝',   bg:'#e6e8f9', fg:'#3f4a9e', border:'#4f5db8'},
+    {key:'purple',  label:'淡紫',   bg:'#ecebfc', fg:'#534ab7', border:'#6f63d9'},
+    {key:'violet',  label:'紫罗',   bg:'#f3e8f9', fg:'#7d3d99', border:'#9553b8'},
+    {key:'pink',    label:'粉红',   bg:'#fbe7ef', fg:'#b23a68', border:'#cf4f81'},
+    {key:'rose',    label:'玫红',   bg:'#fce8e9', fg:'#b02f3a', border:'#d64550'},
+    {key:'orange',  label:'橙红',   bg:'#fae9e1', fg:'#b04522', border:'#d85a30'},
+    {key:'tangerine',label:'橘黄',  bg:'#fdf0e0', fg:'#b25c12', border:'#e07b26'},
+    {key:'amber',   label:'鹅黄',   bg:'#f9edd2', fg:'#93590a', border:'#b47a10'},
+    {key:'gold',    label:'金黄',   bg:'#faf3d6', fg:'#96730e', border:'#c99a1e'},
+    {key:'lime',    label:'青柠',   bg:'#f0f6dc', fg:'#5f7c0e', border:'#7fa316'},
+    {key:'green',   label:'草绿',   bg:'#e8f4e2', fg:'#3a7a2b', border:'#4e9e3a'},
+    {key:'forest',  label:'松绿',   bg:'#e4f1ea', fg:'#236147', border:'#2f7d5c'},
+    {key:'cyan',    label:'湖蓝',   bg:'#e1f3f6', fg:'#1f7c8d', border:'#2a9db5'},
+    {key:'sky',     label:'天蓝',   bg:'#e5f2fb', fg:'#2f7dae', border:'#4a9fd8'},
+    {key:'slate',   label:'蓝灰',   bg:'#e9eef4', fg:'#43617e', border:'#5c7a99'},
+    {key:'gray',    label:'暖灰',   bg:'#efece1', fg:'#57534a', border:'#8a8578'},
+    {key:'brown',   label:'棕褐',   bg:'#f3ebe2', fg:'#75512d', border:'#96693f'},
+    {key:'crimson', label:'深红',   bg:'#f7e5e5', fg:'#852424', border:'#a33232'}
+  ];
+  let calWeekAnchorIso = null;     // ISO date within the displayed week; null = today's week
+  let editingEventId = null;
+  let calNowTimer = null;
+
+  function pad2(n){return (n<10?'0':'')+n;}
+  function ymdParts(iso){const p=String(iso||'').split('-');return {y:Number(p[0])||0,m:Number(p[1])||0,d:Number(p[2])||0};}
+  function isoOfYMD(y,m,d){return y+'-'+pad2(m)+'-'+pad2(d);}
+  function calTodayIso(){return today();}
+  function calWeekDates(){
+    const anchor = calWeekAnchorIso || calTodayIso();
+    const p = ymdParts(anchor);
+    const wd = new Date(Date.UTC(p.y, p.m-1, p.d)).getUTCDay();
+    const sun = new Date(Date.UTC(p.y, p.m-1, p.d - wd));
+    const arr=[];
+    for(let i=0;i<7;i++){
+      const dt = new Date(sun.getTime()+i*86400000);
+      arr.push({iso:isoOfYMD(dt.getUTCFullYear(), dt.getUTCMonth()+1, dt.getUTCDate()), wd:i});
+    }
+    return arr;
+  }
+  function calNowMinutes(){
+    const p = zonedNowParts();
+    return p.hour*60 + p.minute;
+  }
+  function minutesFromHHMM(s){const p=String(s||'').split(':');return (Number(p[0])||0)*60+(Number(p[1])||0);}
+  function hhmmFromMinutes(m){m=((m%1440)+1440)%1440;return pad2(Math.floor(m/60))+':'+pad2(m%60);}
+  function shiftAnchor(iso, days){
+    const p = ymdParts(iso);
+    const dt = new Date(Date.UTC(p.y, p.m-1, p.d + days));
+    return isoOfYMD(dt.getUTCFullYear(), dt.getUTCMonth()+1, dt.getUTCDate());
+  }
+  // Map todos + all-day events onto a specific date (for the all-day strip)
+  const CAL_TYPE_COLORS = {
+    once:   ['var(--once-soft)','var(--once)'],
+    daily:  ['var(--daily-soft)','var(--daily)'],
+    weekly: ['var(--weekly-soft)','var(--weekly)'],
+    monthly:['var(--monthly-soft)','var(--monthly)'],
+    annual: ['var(--annual-soft)','var(--annual)']
+  };
+  function todoTime(t){
+    return (t.reminder && t.reminder.time) ? t.reminder.time : null;
+  }
+  function calTodoOccursOn(t, iso){
+    const p = ymdParts(iso);
+    const wd = new Date(Date.UTC(p.y, p.m-1, p.d)).getUTCDay();
+    if(t.type==='daily') return true;
+    if(t.type==='once') return t.dueDate===iso;
+    if(t.type==='weekly') return (t.weekDay==null?1:t.weekDay)===wd;
+    if(t.type==='monthly') return (t.monthDay||1)===p.d;
+    if(t.type==='annual') return (t.annualMonth||1)===p.m && (t.annualDay||1)===p.d;
+    return false;
+  }
+  function calAllDayItems(iso){
+    const items = [];
+    (state.events||[]).forEach(ev=>{
+      if(ev.allDay && ev.date<=iso && (ev.endDate||ev.date)>=iso) items.push({kind:'event', id:ev.id, title:ev.title, color:ev.color||'teal'});
+    });
+    (state.todos||[]).forEach(t=>{
+      if(todoTime(t)) return; // 有提醒时间的待办放到时间格，不进全天条
+      if(calTodoOccursOn(t, iso)) items.push({kind:'todo', id:t.id, type:t.type, title:t.title, done:t.type==='once'?!!t.completed:isDone(t)});
+    });
+    return items;
+  }
+  function calTimedTodos(iso){
+    return (state.todos||[]).filter(t=>todoTime(t) && calTodoOccursOn(t, iso));
+  }
+  function calAlldayChipHTML(it){
+    if(it.kind==='todo'){
+      const c = CAL_TYPE_COLORS[it.type] || CAL_TYPE_COLORS.once;
+      const icon = (TYPE_META[it.type] && TYPE_META[it.type].icon) || '📌';
+      return '<button type="button" class="cal-allday-chip'+(it.done?' done':'')+'" data-cal-todo="'+it.id+'" data-cal-type="'+it.type+'" style="background:'+c[0]+';color:'+c[1]+'" title="'+esc(it.title)+'">'+icon+' '+esc(it.title)+'</button>';
+    }
+    const c = CAL_COLORS.find(x=>x.key===it.color) || CAL_COLORS[0];
+    return '<button type="button" class="cal-allday-chip" data-evt="'+it.id+'" style="background:'+c.bg+';color:'+c.fg+'" title="'+esc(it.title)+'">🗓️ '+esc(it.title)+'</button>';
+  }
+
+  function renderCalendar(){
+    const headEl = document.getElementById('cal-head');
+    const alldayEl = document.getElementById('cal-allday');
+    const bodyEl = document.getElementById('cal-body');
+    const rangeEl = document.getElementById('cal-range');
+    const countEl = document.getElementById('cal-count');
+    const emptyEl = document.getElementById('cal-empty');
+    if(!headEl || !bodyEl) return;
+    const days = calWeekDates();
+    const todayIso = calTodayIso();
+    const nowMin = calNowMinutes();
+    const dows = ['周日','周一','周二','周三','周四','周五','周六'];
+
+    const a = days[0], b = days[6];
+    rangeEl.textContent = a.iso.slice(0,4)+'年'+Number(a.iso.slice(5,7))+'月'+Number(a.iso.slice(8,10))+'日 – '+Number(b.iso.slice(5,7))+'月'+Number(b.iso.slice(8,10))+'日';
+
+    // header row
+    let head = '<div></div>';
+    days.forEach(dd=>{
+      const isToday = dd.iso===todayIso;
+      head += '<div class="'+(isToday?'today':'')+'"><div class="dow">'+dows[dd.wd]+'</div><div class="dom">'+Number(dd.iso.slice(8,10))+'</div></div>';
+    });
+    headEl.innerHTML = head;
+
+    // all-day strip: all-day events + todos mapped onto this week's days
+    let allday = '<div class="label">全天</div>';
+    days.forEach(dd=>{
+      const items = calAllDayItems(dd.iso);
+      let html = items.slice(0,3).map(calAlldayChipHTML).join('');
+      if(items.length>3) html += '<span class="cal-allday-chip" style="background:var(--card-2);color:var(--text-2);cursor:default" title="'+(items.length-3)+' 项未显示">+'+(items.length-3)+' 更多</span>';
+      allday += '<div class="cal-allday-cell">'+html+'</div>';
+    });
+    alldayEl.innerHTML = allday;
+
+    // gutter
+    let body = '<div class="cal-gutter">';
+    for(let h=CAL_START_HOUR; h<CAL_END_HOUR; h++){
+      body += '<div class="cal-hour">'+pad2(h)+':00</div>';
+    }
+    body += '</div>';
+
+    // 7 day columns
+    days.forEach(dd=>{
+      const isToday = dd.iso===todayIso;
+      body += '<div class="cal-day'+(isToday?' today':'')+'" data-date="'+dd.iso+'">';
+      const evs = (state.events || []).filter(e=>!e.allDay && e.date<=dd.iso && (e.endDate||e.date)>=dd.iso);
+      evs.forEach(ev=>{
+        if(ev.allDay) return; // all-day events not drawn on the grid
+        const c = CAL_COLORS.find(x=>x.key===ev.color) || CAL_COLORS[0];
+        const sm = minutesFromHHMM(ev.start);
+        if(sm < CAL_START_HOUR*60 || sm >= CAL_END_HOUR*60) return;
+        const top = (sm - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+        const fullTitle = esc(ev.title)+' '+esc(ev.start);
+        body += '<div class="cal-evt" style="top:'+top+'px;background:'+c.bg+';color:'+c.fg+';border-color:'+c.border+'" data-evt="'+ev.id+'" title="'+fullTitle+'">'+esc(ev.title)+'</div>';
+      });
+      // 带提醒时间的待办 → 落在对应时间格
+      calTimedTodos(dd.iso).forEach(t=>{
+        const c = CAL_TYPE_COLORS[t.type] || CAL_TYPE_COLORS.once;
+        const tm = todoTime(t);
+        const sm = minutesFromHHMM(tm);
+        if(sm < CAL_START_HOUR*60 || sm >= CAL_END_HOUR*60) return;
+        const done = t.type==='once' ? !!t.completed : isDone(t);
+        const top = (sm - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+        const icon = (TYPE_META[t.type] && TYPE_META[t.type].icon) || '📌';
+        const fullTitle = esc(t.title)+' '+esc(tm);
+        body += '<div class="cal-evt'+(done?' done':'')+'" style="top:'+top+'px;background:'+c[0]+';color:'+c[1]+';border-color:'+c[1]+'" data-cal-todo="'+t.id+'" data-cal-type="'+t.type+'" title="'+fullTitle+'">'+icon+' '+esc(t.title)+'</div>';
+      });
+      if(isToday && nowMin>=CAL_START_HOUR*60 && nowMin<CAL_END_HOUR*60){
+        const top = (nowMin - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+        body += '<div class="cal-now" style="top:'+top+'px"></div>';
+      }
+      body += '</div>';
+    });
+    bodyEl.innerHTML = body;
+
+    const total = (state.events||[]).length;
+    if(countEl) countEl.textContent = total;
+    const navCount = document.getElementById('navcount-calendar');
+    if(navCount) navCount.textContent = total;
+    if(emptyEl) emptyEl.style.display = total ? 'none' : 'block';
+  }
+
+  // ====== Event modal + CRUD ======
+  function buildColorSwatches(){
+    const row = document.getElementById('ev-color-row');
+    if(!row || row.children.length) return;
+    row.innerHTML = CAL_COLORS.map(c=>
+      '<button type="button" class="ev-swatch" data-color="'+c.key+'" title="'+c.label+'" aria-label="'+c.label+'" style="background:'+c.bg+';border-color:'+c.border+'"></button>'
+    ).join('');
+  }
+  function setColorSwatch(key){
+    const row = document.getElementById('ev-color-row');
+    if(!row) return;
+    row.querySelectorAll('.ev-swatch').forEach(b=>b.classList.toggle('on', b.dataset.color===key));
+  }
+  function openEventModal(prefill){
+    buildColorSwatches();
+    editingEventId = (prefill && prefill.id) || null;
+    const modal = document.getElementById('event-modal');
+    const form = document.getElementById('event-form');
+    const titleEl = document.getElementById('event-modal-title');
+    const delBtn = document.getElementById('event-delete-btn');
+    if(editingEventId){
+      const ev = state.events.find(e=>e.id===editingEventId);
+      if(!ev) return;
+      titleEl.textContent = '编辑日程';
+      delBtn.classList.remove('hidden');
+      form.evTitle.value = ev.title || '';
+      form.evDate.value = ev.date || calTodayIso();
+      form.evEndDate.value = ev.endDate || '';
+      form.evStart.value = ev.start || '09:00';
+      form.evColor.value = ev.color || 'teal';
+      form.evAllDay.checked = !!ev.allDay;
+      form.evReminder.checked = !!(ev.reminder && ev.reminder.enabled);
+      form.evReminderMin.value = (ev.reminder && ev.reminder.minutes!=null) ? ev.reminder.minutes : 10;
+    } else {
+      titleEl.textContent = '新建日程';
+      delBtn.classList.add('hidden');
+      form.evTitle.value = '';
+      form.evDate.value = (prefill && prefill.date) || calTodayIso();
+      form.evEndDate.value = '';
+      form.evStart.value = (prefill && prefill.start) || '09:00';
+      form.evColor.value = (prefill && prefill.color) || 'teal';
+      form.evAllDay.checked = false;
+      form.evReminder.checked = false;
+      form.evReminderMin.value = 10;
+    }
+    setColorSwatch(form.evColor.value);
+    updateEventAllDay();
+    modal.classList.remove('hidden');
+    setTimeout(()=>form.evTitle.focus(),60);
+  }
+  function closeEventModal(){
+    document.getElementById('event-modal').classList.add('hidden');
+    editingEventId = null;
+  }
+  function updateEventAllDay(){
+    const form = document.getElementById('event-form');
+    if(!form) return;
+    const ad = form.evAllDay.checked;
+    form.evStart.disabled = ad;
+    const group = document.getElementById('ev-time-group');
+    if(group) group.style.opacity = ad ? '.45' : '1';
+  }
+  function saveEventForm(e){
+    e.preventDefault();
+    const form = e.target;
+    const title = form.evTitle.value.trim();
+    if(!title){ form.evTitle.focus(); return; }
+    const date = form.evDate.value || calTodayIso();
+    let endDate = form.evEndDate.value || '';
+    if(endDate && endDate < date){
+      showToast('结束日期不能早于开始日期'); form.evEndDate.focus(); return;
+    }
+    const allDay = !!form.evAllDay.checked;
+    const start = allDay ? '00:00' : (form.evStart.value || '09:00');
+    const wantReminder = form.evReminder.checked;
+    const minutes = Math.max(0, Math.min(1440, Number(form.evReminderMin.value)||0));
+    const data = {
+      title: title,
+      date: date,
+      endDate: (endDate && endDate!==date) ? endDate : null,
+      start: start,
+      color: form.evColor.value || 'teal',
+      allDay: allDay,
+      reminder: wantReminder ? {enabled:true, minutes:minutes, lastFired:null} : null
+    };
+    if(editingEventId){
+      const ev = state.events.find(e=>e.id===editingEventId);
+      if(!ev) return;
+      const prevFired = ev.reminder && ev.reminder.lastFired ? ev.reminder.lastFired : null;
+      Object.assign(ev, data);
+      delete ev.end;
+      if(ev.reminder) ev.reminder.lastFired = prevFired;
+      showToast('已更新日程');
+    } else {
+      state.events.push({
+        id: 'e_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),
+        createdAt: new Date().toISOString(),
+        ...data
+      });
+      showToast('已添加日程');
+    }
+    save(); render(); closeEventModal();
+  }
+  function delEvent(id){
+    state.events = state.events.filter(e=>e.id!==id);
+    save(); render();
+    showToast('已删除日程');
+  }
+
+  // Click on empty grid cell → quick-create at the clicked time (snapped to 30 min, end +1h)
+  function calBodyClick(e){
+    const todoEl = e.target.closest('[data-cal-todo]');
+    if(todoEl){ switchView(todoEl.dataset.calType); return; }
+    const evtEl = e.target.closest('[data-evt]');
+    if(evtEl){
+      openEventModal({id: evtEl.dataset.evt});
+      return;
+    }
+    const dayEl = e.target.closest('[data-date]');
+    if(!dayEl) return;
+    const date = dayEl.dataset.date;
+    const rect = dayEl.getBoundingClientRect();
+    const y = e.clientY - rect.top + dayEl.scrollTop;
+    let mins = CAL_START_HOUR*60 + Math.floor(y / CAL_HOUR_H * 60);
+    mins = Math.max(CAL_START_HOUR*60, Math.min((CAL_END_HOUR-1)*60+30, Math.round(mins/30)*30));
+    const start = hhmmFromMinutes(mins);
+    openEventModal({date: date, start: start});
+  }
+
+  // ====== Event reminders (lightweight 30s ticker, reuses sound + system notif + toast) ======
+  function tickEventReminders(){
+    const todayIso = calTodayIso();
+    const nowMin = calNowMinutes();
+    for(const ev of (state.events||[])){
+      if(!ev.reminder || !ev.reminder.enabled || ev.allDay) continue;
+      if(ev.date !== todayIso) continue;
+      const fireMin = minutesFromHHMM(ev.start) - (ev.reminder.minutes||0);
+      if(nowMin >= fireMin && nowMin < minutesFromHHMM(ev.start)){
+        const key = ev.date+'T'+hhmmFromMinutes(fireMin);
+        if(ev.reminder.lastFired !== key){
+          ev.reminder.lastFired = key;
+          save();
+          fireEventReminder(ev);
+        }
+      }
+    }
+  }
+  function fireEventReminder(ev){
+    playNotificationSound();
+    // Reuse system notification with a synthetic object (tag/id distinct)
+    try{
+      showSystemNotification({id:ev.id, title:ev.title, description: ev.start+'–'+ev.end, type:'once'});
+    }catch(err){ /* ignore */ }
+    showToast('🔔 日程提醒：'+ev.title+' '+ev.start);
+  }
+
+
   function toggle(id){
     const t = state.todos.find(x=>x.id===id);
     if(!t) return;
@@ -1537,7 +2005,7 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Import / Export ======
   function exportData(){
-    const blob = new Blob([JSON.stringify({version:3, exportedAt:new Date().toISOString(), todos:state.todos, projects:state.projects}, null, 2)], {type:'application/json'});
+    const blob = new Blob([JSON.stringify({version:3, exportedAt:new Date().toISOString(), todos:state.todos, projects:state.projects, events:state.events}, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'todo-backup-'+today()+'.json';
@@ -1552,7 +2020,7 @@ input,textarea,select{font:inherit;color:inherit}
         const data = JSON.parse(e.target.result);
         if(!data || !Array.isArray(data.todos)) throw new Error('文件格式不对');
         if(!confirm('导入将覆盖当前所有数据，确定继续？')) return;
-        state = { todos: data.todos, projects:normalizeProjects(data.projects, data.projectTimer) };
+        state = { todos: data.todos, projects:normalizeProjects(data.projects, data.projectTimer), events: Array.isArray(data.events) ? data.events : [] };
         clearAllReminderTimeouts();
         save(); render();
         // Rebuild timeouts for any reminders in the imported data
@@ -2048,7 +2516,7 @@ input,textarea,select{font:inherit;color:inherit}
     });
     // View switching (sidebar)
     function switchView(name){
-      const valid = ['home','once','daily','weekly','monthly','annual','projects'];
+      const valid = ['home','calendar','once','daily','weekly','monthly','annual','projects'];
       if(valid.indexOf(name)<0) name = 'home';
       document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+name));
       document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active', n.dataset.view===name));
@@ -2115,6 +2583,40 @@ input,textarea,select{font:inherit;color:inherit}
       });
     });
     document.getElementById('f-year-month').addEventListener('change', updateAnnualDayLimit);
+    // ====== Calendar week view ======
+    document.getElementById('cal-today').addEventListener('click', ()=>{ calWeekAnchorIso = null; renderCalendar(); });
+    document.getElementById('cal-prev').addEventListener('click', ()=>{ const a = calWeekAnchorIso || calTodayIso(); calWeekAnchorIso = shiftAnchor(a, -7); renderCalendar(); });
+    document.getElementById('cal-next').addEventListener('click', ()=>{ const a = calWeekAnchorIso || calTodayIso(); calWeekAnchorIso = shiftAnchor(a, 7); renderCalendar(); });
+    document.getElementById('cal-body').addEventListener('click', calBodyClick);
+    document.getElementById('cal-allday').addEventListener('click', e=>{
+      const todoChip = e.target.closest('[data-cal-todo]');
+      if(todoChip){ switchView(todoChip.dataset.calType); return; }
+      const evtChip = e.target.closest('[data-evt]');
+      if(evtChip) openEventModal({id: evtChip.dataset.evt});
+    });
+    document.getElementById('event-close').addEventListener('click', closeEventModal);
+    document.getElementById('event-cancel').addEventListener('click', closeEventModal);
+    document.getElementById('event-modal').addEventListener('click', e=>{ if(e.target.id==='event-modal') closeEventModal(); });
+    document.getElementById('event-form').addEventListener('submit', saveEventForm);
+    document.getElementById('ev-all-day').addEventListener('change', updateEventAllDay);
+    document.getElementById('ev-color-row').addEventListener('click', e=>{
+      const sw = e.target.closest('.ev-swatch');
+      if(!sw) return;
+      document.getElementById('ev-color').value = sw.dataset.color;
+      setColorSwatch(sw.dataset.color);
+    });
+    buildColorSwatches();
+    document.getElementById('event-delete-btn').addEventListener('click', ()=>{
+      if(editingEventId && confirm('确定删除这个日程？')){
+        const id = editingEventId;
+        closeEventModal();
+        delEvent(id);
+      }
+    });
+    // Refresh now-line every 30s + check event reminders
+    calNowTimer = setInterval(()=>{ tickEventReminders(); const cal = document.getElementById('view-calendar'); if(cal && cal.classList.contains('active')) renderCalendar(); }, 30000);
+    tickEventReminders();
+
     document.getElementById('export-btn').addEventListener('click', exportData);
     document.getElementById('import-btn').addEventListener('click', ()=>{
       document.getElementById('import-file').click();

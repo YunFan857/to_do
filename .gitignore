@@ -30,3 +30,9 @@ yarn-error.log
 __pycache__/
 *.pyc
 *.pyo
+
+# WorkBuddy 工作区元数据（含记忆日志，不进版本库）
+.workbuddy/
+
+# 开发过程原型（不影响运行）
+mockups/

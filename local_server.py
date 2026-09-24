@@ -22,10 +22,16 @@ def normalized_state(data):
         projects = [legacy_project] if isinstance(legacy_project, dict) else []
     if not isinstance(projects, list) or any(not isinstance(project, dict) for project in projects):
         raise ValueError("invalid projects")
+    events = data.get("events")
+    if events is None:
+        events = []
+    if not isinstance(events, list):
+        raise ValueError("invalid events")
     return {
         "version": 3,
         "todos": data["todos"],
         "projects": projects,
+        "events": events,
     }
 
 
@@ -59,7 +65,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path == "/api/state":
             if not DATA_FILE.exists():
-                return self._json(200, {"version": 3, "todos": [], "projects": [], "exists": False})
+                return self._json(200, {"version": 3, "todos": [], "projects": [], "events": [], "exists": False})
             try:
                 with DATA_FILE.open("r", encoding="utf-8") as fh:
                     state = normalized_state(json.load(fh))
