@@ -1,0 +1,143 @@
+.page {
+  padding: 30rpx;
+}
+
+.form-card {
+  padding: 10rpx 28rpx;
+}
+
+.form-group {
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #F1ECE1;
+}
+
+.form-group:last-child {
+  border-bottom: none;
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #6B675E;
+  margin-bottom: 16rpx;
+}
+
+.req {
+  color: #D4537E;
+}
+
+.form-input {
+  background: #FBF7F0;
+  border-radius: 14rpx;
+  padding: 18rpx 22rpx;
+  font-size: 30rpx;
+}
+
+.form-picker {
+  background: #FBF7F0;
+  border-radius: 14rpx;
+  padding: 18rpx 22rpx;
+  font-size: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.picker-arrow {
+  color: #B8B4A9;
+  font-size: 24rpx;
+}
+
+.ms-card {
+  margin-top: 24rpx;
+  padding: 26rpx 28rpx;
+}
+
+.ms-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3D3A34;
+}
+
+.ms-add {
+  font-size: 24rpx;
+  color: #D4537E;
+  padding: 6rpx 12rpx;
+}
+
+.ms-empty {
+  font-size: 24rpx;
+  color: #B8B4A9;
+  padding: 20rpx 0;
+}
+
+.ms-item {
+  border-top: 1rpx solid #F1ECE1;
+  padding: 20rpx 0;
+}
+
+.ms-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14rpx;
+}
+
+.ms-item-index {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: 50%;
+  background: #F9E3EB;
+  color: #D4537E;
+  font-size: 22rpx;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ms-item-remove {
+  font-size: 24rpx;
+  color: #C0392B;
+  padding: 4rpx 10rpx;
+}
+
+.ms-input {
+  margin-bottom: 14rpx;
+}
+
+.ms-desc {
+  font-size: 26rpx;
+  margin-bottom: 0;
+}
+
+.actions {
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.save-btn.disabled {
+  opacity: 0.6;
+}
+
+.btn-danger {
+  background: #FDEDEA;
+  color: #C0392B;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  padding: 18rpx 0;
+  text-align: center;
+  border: none;
+}
+
+.btn-danger::after {
+  border: none;
+}

@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "todo-card": "/components/todo-card/todo-card"
+  },
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "light"
+}

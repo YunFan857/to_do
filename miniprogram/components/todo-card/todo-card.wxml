@@ -1,0 +1,12 @@
+<view class="tcard {{done ? 'tcard-done' : ''}}" bindtap="onTap">
+  <view class="tcard-check {{done ? 'checked' : ''}}" catchtap="onToggle">
+    <text wx:if="{{done}}" class="tcard-check-mark">✓</text>
+  </view>
+  <view class="tcard-body">
+    <view class="tcard-title-row">
+      <text class="tcard-title">{{todo.title}}</text>
+      <text wx:if="{{overdue}}" class="tcard-overdue">已过期</text>
+    </view>
+    <view wx:if="{{meta}}" class="tcard-meta">{{meta}}</view>
+  </view>
+</view>

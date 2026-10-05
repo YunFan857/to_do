@@ -1,0 +1,40 @@
+<view class="page">
+  <view wx:if="{{loggedOut}}" class="login-tip card">
+    <view class="login-tip-text">登录后即可查看全部待办</view>
+    <navigator url="/pages/me/me" class="btn-primary login-btn">去登录</navigator>
+  </view>
+
+  <block wx:else>
+    <scroll-view scroll-x class="tab-bar" enhanced show-scrollbar="{{false}}">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="key"
+        class="tab-item {{activeTab === item.key ? 'active' : ''}}"
+        data-key="{{item.key}}"
+        bindtap="onTabTap"
+      >
+        <text>{{item.label}}</text>
+        <text class="tab-count">{{item.count}}</text>
+      </view>
+    </scroll-view>
+
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+
+    <view wx:elif="{{items.length === 0}}" class="empty">
+      <view class="empty-icon">🍃</view>
+      <view>这里还没有待办</view>
+    </view>
+
+    <view wx:else class="list">
+      <todo-card
+        wx:for="{{items}}"
+        wx:key="id"
+        todo="{{item}}"
+        bind:toggle="onToggle"
+        bind:edit="onEdit"
+      />
+    </view>
+  </block>
+
+  <view wx:if="{{!loggedOut}}" class="fab" bindtap="onCreate">＋</view>
+</view>

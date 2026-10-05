@@ -36,3 +36,9 @@ __pycache__/
 
 # 开发过程原型（不影响运行）
 mockups/
+
+# 依赖与第三方 SDK（体积大，不入库）
+node_modules/
+
+# WorkBuddy 运行时元数据
+.wbapp*

@@ -1,0 +1,50 @@
+<view class="page">
+  <view wx:if="{{loggedOut}}" class="login-tip card">
+    <view class="login-tip-text">登录后即可查看项目正计时</view>
+    <navigator url="/pages/me/me" class="btn-primary login-btn">去登录</navigator>
+  </view>
+
+  <view wx:elif="{{loading}}" class="empty">加载中…</view>
+
+  <view wx:elif="{{projects.length === 0}}" class="empty">
+    <view class="empty-icon">⏱️</view>
+    <view>还没有项目，点右下角新建</view>
+  </view>
+
+  <view wx:else>
+    <view wx:for="{{projects}}" wx:key="id" class="card project-card" data-id="{{item.id}}" bindtap="onProjectTap">
+      <view class="project-header">
+        <view class="project-name">{{item.name}}</view>
+        <view class="project-elapsed">
+          <text class="elapsed-num">{{item.elapsed}}</text>
+          <text class="elapsed-unit">天</text>
+        </view>
+      </view>
+      <view class="project-sub">正在第 {{item.day}} 天 · 点击编辑节点</view>
+
+      <view class="timeline">
+        <block wx:for="{{item.points}}" wx:for-item="pt" wx:key="key">
+          <view wx:if="{{pt.gapLabel}}" class="tl-connector">
+            <view class="tl-line"></view>
+            <text class="tl-gap">{{pt.gapLabel}}</text>
+          </view>
+          <view class="tl-point">
+            <view class="tl-date {{pt.kind === 'today' ? 'date-today' : ''}}">{{pt.dateLabel}}</view>
+            <view class="tl-marker {{pt.kind === 'start' ? 'marker-start' : pt.kind === 'today' ? 'marker-today' : pt.kind === 'milestone' && pt.isPast ? 'marker-past' : ''}}"></view>
+            <view class="tl-card {{pt.kind === 'today' ? 'card-today' : ''}}">
+              <view class="tl-kicker">{{pt.kicker}}</view>
+              <view class="tl-title">{{pt.title}}</view>
+              <view wx:if="{{pt.description}}" class="tl-desc">{{pt.description}}</view>
+              <view wx:if="{{pt.kind === 'start' || pt.kind === 'today'}}" class="tl-progress">
+                <text>已持续 {{pt.elapsed}} 天</text>
+                <text>正在第 {{pt.elapsed + 1}} 天</text>
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{!loggedOut}}" class="fab" bindtap="onCreate">＋</view>
+</view>

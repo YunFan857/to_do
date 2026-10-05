@@ -1,0 +1,81 @@
+<view class="page">
+  <view wx:if="{{banner}}" class="rbanner">
+    <view class="rbanner-icon">🔔</view>
+    <view class="rbanner-body" bindtap="onBannerView">
+      <view class="rbanner-title">{{banner.title}}</view>
+      <view class="rbanner-sub">{{banner.start}} 开始 · 点击查看</view>
+    </view>
+    <view class="rbanner-close" catchtap="onBannerDismiss">✕</view>
+  </view>
+
+  <view class="header">
+    <view class="header-date">{{todayLabel}}</view>
+    <view class="header-title">今天要做的事</view>
+  </view>
+
+  <view wx:if="{{!loggedOut}}" class="progress-card card">
+    <view class="progress-row">
+      <text class="progress-label">今日进度</text>
+      <text class="progress-num">{{doneCount}}/{{totalCount}}</text>
+    </view>
+    <view class="progress-bar">
+      <view class="progress-fill" style="width: {{percent}}%"></view>
+    </view>
+    <view class="progress-percent">{{percent}}%</view>
+  </view>
+
+  <view wx:if="{{loggedOut}}" class="login-tip card">
+    <view class="login-tip-text">登录后即可同步你的待办</view>
+    <navigator url="/pages/me/me" class="btn-primary login-btn">去登录</navigator>
+  </view>
+
+  <block wx:else>
+    <view wx:if="{{todayEvents.length}}" class="card">
+      <view class="section-title">今日日程</view>
+      <view wx:for="{{todayEvents}}" wx:key="id" class="event-line" data-id="{{item.id}}" bindtap="onEventTap">
+        <view class="event-dot" style="background: {{item.color.fg}}"></view>
+        <text class="event-time">{{item.start}}</text>
+        <text class="event-name">{{item.title}}</text>
+      </view>
+      <navigator url="/pages/calendar/calendar" class="section-more">查看日历 ›</navigator>
+    </view>
+
+    <view wx:if="{{memoList.length}}" class="card">
+      <view class="section-title">临近备忘</view>
+      <view wx:for="{{memoList}}" wx:key="id" class="memo-line" data-id="{{item.id}}" bindtap="onEdit">
+        <text class="memo-name {{item.overdue ? 'memo-overdue' : ''}}">{{item.title}}</text>
+        <text class="memo-date {{item.overdue ? 'memo-overdue' : ''}}">{{item.dateLabel}}</text>
+      </view>
+    </view>
+
+    <view class="card stats-card">
+      <view class="section-title">五类统计</view>
+      <view class="stats-grid">
+        <view wx:for="{{stats}}" wx:key="key" class="stat-cell">
+          <view class="stat-icon">{{item.icon}}</view>
+          <view class="stat-label">{{item.label}}</view>
+          <view class="stat-num">{{item.done}}/{{item.total}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+
+    <view wx:elif="{{todayItems.length === 0}}" class="empty">
+      <view class="empty-icon">🌤</view>
+      <view>今天没有待办，很清爽</view>
+    </view>
+
+    <view wx:else class="list">
+      <todo-card
+        wx:for="{{todayItems}}"
+        wx:key="id"
+        todo="{{item}}"
+        bind:toggle="onToggle"
+        bind:edit="onEdit"
+      />
+    </view>
+  </block>
+
+  <view wx:if="{{!loggedOut}}" class="fab" bindtap="onCreate">＋</view>
+</view>

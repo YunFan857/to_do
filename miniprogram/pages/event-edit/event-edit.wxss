@@ -1,0 +1,116 @@
+.page {
+  padding: 30rpx;
+}
+
+.form-card {
+  padding: 10rpx 28rpx;
+}
+
+.form-group {
+  padding: 26rpx 0;
+  border-bottom: 1rpx solid #F1ECE1;
+}
+
+.form-group:last-child {
+  border-bottom: none;
+}
+
+.form-group-disabled {
+  opacity: 0.45;
+}
+
+.form-label {
+  font-size: 26rpx;
+  color: #6B675E;
+  margin-bottom: 16rpx;
+}
+
+.form-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 26rpx;
+  color: #6B675E;
+}
+
+.form-hint {
+  font-size: 22rpx;
+  color: #B8B4A9;
+}
+
+.req {
+  color: #D4537E;
+}
+
+.form-input {
+  background: #FBF7F0;
+  border-radius: 14rpx;
+  padding: 18rpx 22rpx;
+  font-size: 30rpx;
+}
+
+.num-input {
+  width: 200rpx;
+}
+
+.form-picker {
+  background: #FBF7F0;
+  border-radius: 14rpx;
+  padding: 18rpx 22rpx;
+  font-size: 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.placeholder {
+  color: #B8B4A9;
+}
+
+.picker-arrow {
+  color: #B8B4A9;
+  font-size: 24rpx;
+}
+
+.color-row {
+  display: flex;
+  gap: 24rpx;
+  flex-wrap: wrap;
+}
+
+.color-dot {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 50%;
+  border: 4rpx solid transparent;
+}
+
+.color-dot.active {
+  border-color: #3D3A34;
+  box-shadow: 0 0 0 4rpx #FFFFFF inset;
+}
+
+.actions {
+  margin-top: 40rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.save-btn.disabled {
+  opacity: 0.6;
+}
+
+.btn-danger {
+  background: #FDEDEA;
+  color: #C0392B;
+  border-radius: 16rpx;
+  font-size: 30rpx;
+  padding: 18rpx 0;
+  text-align: center;
+  border: none;
+}
+
+.btn-danger::after {
+  border: none;
+}

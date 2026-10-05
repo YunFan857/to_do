@@ -1,0 +1,71 @@
+.tcard {
+  display: flex;
+  align-items: flex-start;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 26rpx 28rpx;
+  margin-bottom: 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(61, 58, 52, 0.04);
+}
+
+.tcard-done .tcard-title {
+  color: #B8B4A9;
+  text-decoration: line-through;
+}
+
+.tcard-check {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  border: 3rpx solid #D8D3C6;
+  margin-right: 22rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4rpx;
+}
+
+.tcard-check.checked {
+  background: #D4537E;
+  border-color: #D4537E;
+}
+
+.tcard-check-mark {
+  color: #FFFFFF;
+  font-size: 26rpx;
+  font-weight: 600;
+}
+
+.tcard-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tcard-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tcard-title {
+  font-size: 30rpx;
+  color: #3D3A34;
+  word-break: break-all;
+}
+
+.tcard-overdue {
+  font-size: 22rpx;
+  color: #C0392B;
+  background: #FDEDEA;
+  border-radius: 8rpx;
+  padding: 2rpx 12rpx;
+  margin-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.tcard-meta {
+  font-size: 24rpx;
+  color: #9B988F;
+  margin-top: 6rpx;
+}

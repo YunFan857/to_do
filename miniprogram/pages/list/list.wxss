@@ -1,0 +1,69 @@
+.page {
+  padding: 20rpx 30rpx 160rpx;
+}
+
+.tab-bar {
+  white-space: nowrap;
+  margin-bottom: 24rpx;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 12rpx 26rpx;
+  margin-right: 14rpx;
+  background: #FFFFFF;
+  border-radius: 32rpx;
+  font-size: 26rpx;
+  color: #6B675E;
+}
+
+.tab-item.active {
+  background: #D4537E;
+  color: #FFFFFF;
+}
+
+.tab-item.active .tab-count {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tab-count {
+  font-size: 22rpx;
+  color: #B8B4A9;
+  margin-left: 10rpx;
+}
+
+.login-tip {
+  text-align: center;
+  padding: 60rpx 40rpx;
+}
+
+.login-tip-text {
+  color: #6B675E;
+  margin-bottom: 30rpx;
+}
+
+.login-btn {
+  display: block;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 60rpx;
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  background: #D4537E;
+  color: #FFFFFF;
+  font-size: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(212, 83, 126, 0.35);
+}

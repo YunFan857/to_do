@@ -1,0 +1,27 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="empty">加载中…</view>
+
+  <view wx:elif="{{loggedOut}}" class="card login-card">
+    <view class="login-icon">🫧</view>
+    <view class="login-title">欢迎使用我的待办</view>
+    <view class="login-desc">登录后，待办将同步保存在云端，换手机也不丢</view>
+    <button class="btn-primary login-btn" bindtap="onLogin" disabled="{{loggingIn}}">
+      {{loggingIn ? '登录中…' : '微信一键登录'}}
+    </button>
+  </view>
+
+  <block wx:else>
+    <view class="card profile-card">
+      <view class="avatar">{{nickname[0] || '我'}}</view>
+      <view class="profile-info">
+        <view class="nickname">{{nickname}}</view>
+        <view class="profile-sub text-secondary">数据已云端同步</view>
+      </view>
+    </view>
+
+    <view class="card action-card" bindtap="onLogout">
+      <text class="action-label">退出登录</text>
+      <text class="action-arrow">›</text>
+    </view>
+  </block>
+</view>

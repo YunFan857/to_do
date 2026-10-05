@@ -1,0 +1,75 @@
+<view class="page">
+  <view wx:if="{{loggedOut}}" class="login-tip card">
+    <view class="login-tip-text">登录后即可查看日历</view>
+    <navigator url="/pages/me/me" class="btn-primary login-btn">去登录</navigator>
+  </view>
+
+  <block wx:else>
+    <view class="toolbar">
+      <view class="tool-btn" bindtap="onToday">今天</view>
+      <view class="tool-btn tool-nav" bindtap="onPrevWeek">‹</view>
+      <view class="tool-btn tool-nav" bindtap="onNextWeek">›</view>
+      <view class="range-title">{{rangeTitle}}</view>
+    </view>
+
+    <view wx:if="{{loading}}" class="empty">加载中…</view>
+
+    <view wx:else class="calendar">
+      <view class="cal-head">
+        <view class="cal-head-gutter"></view>
+        <view wx:for="{{days}}" wx:key="iso" class="cal-head-cell {{item.isToday ? 'today' : ''}}">
+          <view class="dow">{{item.isToday ? '今天' : '周' + ['日','一','二','三','四','五','六'][item.dow]}}</view>
+          <view class="dom">{{item.dom}}</view>
+        </view>
+      </view>
+
+      <view class="allday-row">
+        <view class="allday-label">全天</view>
+        <view wx:for="{{days}}" wx:key="iso" class="allday-cell">
+          <view
+            wx:for="{{item.allDay}}"
+            wx:for-item="chip"
+            wx:key="id"
+            class="allday-chip {{chip.kind === 'todo' ? 'chip-todo' : ''}}"
+            style="{{chip.style}}"
+            data-kind="{{chip.kind}}"
+            data-id="{{chip.id}}"
+            bindtap="onEventTap"
+          >{{chip.title}}</view>
+        </view>
+      </view>
+
+      <scroll-view scroll-y class="cal-scroll">
+        <view class="cal-body">
+          <view class="gutter">
+            <view
+              wx:for="{{hourLabels}}"
+              wx:key="*this"
+              class="hour-label"
+              style="height: {{gridHeight / hourLabels.length}}px; line-height: {{gridHeight / hourLabels.length}}px"
+            >{{item}}</view>
+          </view>
+
+          <view wx:for="{{days}}" wx:key="iso" class="day-col {{item.isToday ? 'today' : ''}}" style="height: {{gridHeight}}px">
+            <view
+              wx:for="{{item.timed}}"
+              wx:for-item="evt"
+              wx:key="id"
+              class="cal-evt"
+              style="{{evt.style}}"
+              data-kind="{{evt.kind}}"
+              data-id="{{evt.id}}"
+              bindtap="onEventTap"
+            >{{evt.title}}</view>
+
+            <view wx:if="{{item.nowLineTop != null}}" class="now-line" style="top: {{item.nowLineTop}}px">
+              <view class="now-dot"></view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="fab" bindtap="onCreate">＋</view>
+  </block>
+</view>

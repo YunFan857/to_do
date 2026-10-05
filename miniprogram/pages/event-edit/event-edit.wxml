@@ -1,0 +1,70 @@
+<view class="page">
+  <view class="card form-card">
+    <view class="form-group">
+      <view class="form-label">标题 <text class="req">*</text></view>
+      <input class="form-input" value="{{title}}" placeholder="日程名称" maxlength="80" bindinput="onTitleInput" />
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">开始日期 <text class="req">*</text></view>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange">
+        <view class="form-picker"><text>{{date}}</text><text class="picker-arrow">▾</text></view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">结束日期 <text class="form-hint">不填表示单日；跨天日程会显示在区间每一天</text></view>
+      <picker mode="date" value="{{endDate || date}}" bindchange="onEndDateChange">
+        <view class="form-picker">
+          <text class="{{endDate ? '' : 'placeholder'}}">{{endDate || '可选'}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label-row">
+        <text>全天日程</text>
+        <switch checked="{{allDay}}" bindchange="onAllDayChange" color="#D4537E" />
+      </view>
+    </view>
+
+    <view class="form-group {{allDay ? 'form-group-disabled' : ''}}">
+      <view class="form-label">开始时间</view>
+      <picker mode="time" value="{{start}}" disabled="{{allDay}}" bindchange="onStartChange">
+        <view class="form-picker"><text>{{start}}</text><text class="picker-arrow">▾</text></view>
+      </picker>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">颜色</view>
+      <view class="color-row">
+        <view
+          wx:for="{{colors}}"
+          wx:key="key"
+          class="color-dot {{index === colorIndex ? 'active' : ''}}"
+          style="background: {{item.border}}"
+          data-index="{{index}}"
+          bindtap="onColorTap"
+        ></view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label-row">
+        <text>到点提醒 <text class="form-hint">小程序在前台时弹横幅提醒</text></text>
+        <switch checked="{{reminderOn}}" bindchange="onReminderToggle" color="#D4537E" />
+      </view>
+    </view>
+
+    <view wx:if="{{reminderOn}}" class="form-group">
+      <view class="form-label">提前提醒（分钟）</view>
+      <input class="form-input num-input" type="number" value="{{reminderMin}}" bindinput="onReminderMinChange" />
+    </view>
+  </view>
+
+  <view class="actions">
+    <button wx:if="{{isEdit}}" class="btn-danger" bindtap="onDelete">删除</button>
+    <button class="btn-primary save-btn {{saving ? 'disabled' : ''}}" bindtap="onSave">{{saving ? '保存中…' : '保存'}}</button>
+  </view>
+</view>

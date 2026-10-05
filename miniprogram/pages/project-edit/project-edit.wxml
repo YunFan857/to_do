@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="card form-card">
+    <view class="form-group">
+      <view class="form-label">项目名称 <text class="req">*</text></view>
+      <input class="form-input" value="{{name}}" placeholder="比如：Hermes 产品介绍视频" maxlength="80" bindinput="onNameInput" />
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">开始日期 <text class="req">*</text></view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="form-picker"><text>{{startDate}}</text><text class="picker-arrow">▾</text></view>
+      </picker>
+    </view>
+  </view>
+
+  <view class="card ms-card">
+    <view class="ms-header">
+      <view class="section-title">进展节点</view>
+      <view class="ms-add" bindtap="onAddMilestone">＋ 添加节点</view>
+    </view>
+
+    <view wx:if="{{milestones.length === 0}}" class="ms-empty">记录关键节点，时间轴会自动计算间隔天数</view>
+
+    <view wx:for="{{milestones}}" wx:key="id" class="ms-item">
+      <view class="ms-item-head">
+        <text class="ms-item-index">{{index + 1}}</text>
+        <view class="ms-item-remove" data-index="{{index}}" catchtap="onRemoveMilestone">删除</view>
+      </view>
+      <input class="form-input ms-input" value="{{item.title}}" placeholder="节点标题" maxlength="80" data-index="{{index}}" bindinput="onMilestoneTitle" />
+      <picker mode="date" value="{{item.date}}" data-index="{{index}}" bindchange="onMilestoneDate">
+        <view class="form-picker ms-input"><text>{{item.date}}</text><text class="picker-arrow">▾</text></view>
+      </picker>
+      <input class="form-input ms-input ms-desc" value="{{item.description}}" placeholder="备注（可选）" maxlength="300" data-index="{{index}}" bindinput="onMilestoneDesc" />
+    </view>
+  </view>
+
+  <view class="actions">
+    <button wx:if="{{isEdit}}" class="btn-danger" bindtap="onDelete">删除项目</button>
+    <button class="btn-primary save-btn {{saving ? 'disabled' : ''}}" bindtap="onSave">{{saving ? '保存中…' : '保存'}}</button>
+  </view>
+</view>

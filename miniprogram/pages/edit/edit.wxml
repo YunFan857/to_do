@@ -1,0 +1,76 @@
+<view class="page">
+  <view class="card form-card">
+    <view class="form-group">
+      <view class="form-label">标题 <text class="req">*</text></view>
+      <input class="form-input" value="{{title}}" placeholder="要做的事" maxlength="80" bindinput="onTitleInput" />
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">类型</view>
+      <picker range="{{typeOptions}}" range-key="label" value="{{typeIndex}}" bindchange="onTypeChange">
+        <view class="form-picker">
+          <text>{{typeOptions[typeIndex].label}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:if="{{type === 'once'}}" class="form-group">
+      <view class="form-label">截止日期 <text class="req">*</text></view>
+      <picker mode="date" value="{{dueDate || todayStr}}" start="2020-01-01" end="2099-12-31" bindchange="onDueDateChange">
+        <view class="form-picker">
+          <text class="{{dueDate ? '' : 'placeholder'}}">{{dueDate || '选择日期'}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:elif="{{type === 'weekly'}}" class="form-group">
+      <view class="form-label">重复日</view>
+      <picker range="{{weekOptions}}" range-key="label" value="{{weekIndex}}" bindchange="onWeekChange">
+        <view class="form-picker">
+          <text>{{weekOptions[weekIndex].label}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:elif="{{type === 'monthly'}}" class="form-group">
+      <view class="form-label">每月几号</view>
+      <picker range="{{monthDayOptions}}" range-key="label" value="{{monthDayIndex}}" bindchange="onMonthDayChange">
+        <view class="form-picker">
+          <text>{{monthDayOptions[monthDayIndex].label}}</text>
+          <text class="picker-arrow">▾</text>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:elif="{{type === 'annual'}}" class="form-group">
+      <view class="form-label">每年日期</view>
+      <view class="annual-row">
+        <picker class="annual-picker" range="{{annualMonthOptions}}" range-key="label" value="{{annualMonthIndex}}" bindchange="onAnnualMonthChange">
+          <view class="form-picker">
+            <text>{{annualMonthOptions[annualMonthIndex].label}}</text>
+            <text class="picker-arrow">▾</text>
+          </view>
+        </picker>
+        <picker class="annual-picker" range="{{annualDayOptions}}" range-key="label" value="{{annualDayIndex}}" bindchange="onAnnualDayChange">
+          <view class="form-picker">
+            <text>{{annualDayOptions[annualDayIndex].label}}</text>
+            <text class="picker-arrow">▾</text>
+          </view>
+        </picker>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <view class="form-label">备注</view>
+      <textarea class="form-textarea" value="{{note}}" placeholder="补充说明（可选）" maxlength="300" bindinput="onNoteInput" />
+    </view>
+  </view>
+
+  <view class="actions">
+    <button wx:if="{{isEdit}}" class="btn-danger" bindtap="onDelete">删除</button>
+    <button class="btn-primary save-btn {{saving ? 'disabled' : ''}}" bindtap="onSave">{{saving ? '保存中…' : '保存'}}</button>
+  </view>
+</view>

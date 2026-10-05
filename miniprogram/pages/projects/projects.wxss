@@ -1,0 +1,197 @@
+.page {
+  padding: 20rpx 30rpx 160rpx;
+}
+
+.project-card {
+  padding: 30rpx 30rpx 20rpx;
+}
+
+.project-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.project-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #3D3A34;
+}
+
+.project-elapsed {
+  display: flex;
+  align-items: baseline;
+}
+
+.elapsed-num {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #D4537E;
+}
+
+.elapsed-unit {
+  font-size: 22rpx;
+  color: #9B988F;
+  margin-left: 6rpx;
+}
+
+.project-sub {
+  font-size: 24rpx;
+  color: #9B988F;
+  margin-top: 4rpx;
+}
+
+.timeline {
+  margin-top: 26rpx;
+  padding-left: 8rpx;
+}
+
+.tl-connector {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding-left: 66rpx;
+  height: 52rpx;
+}
+
+.tl-line {
+  position: absolute;
+  left: 76rpx;
+  top: 0;
+  bottom: 0;
+  width: 2rpx;
+  background: #E5DEC9;
+}
+
+.tl-gap {
+  font-size: 20rpx;
+  color: #A59F8C;
+  background: #FBF7F0;
+  padding: 0 8rpx;
+  position: relative;
+}
+
+.tl-point {
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.tl-date {
+  width: 96rpx;
+  font-size: 22rpx;
+  color: #9B988F;
+  text-align: right;
+  padding-top: 14rpx;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.date-today {
+  color: #D4537E;
+  font-weight: 600;
+}
+
+.tl-marker {
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 4rpx solid #716C5A;
+  margin: 14rpx 18rpx 0;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.marker-start {
+  border-color: #0F766E;
+  background: #DFF2EA;
+}
+
+.marker-today {
+  border-color: #D4537E;
+  background: #D4537E;
+  box-shadow: 0 0 0 6rpx rgba(212, 83, 126, 0.15);
+}
+
+.marker-past {
+  border-color: #B8B4A9;
+  background: #B8B4A9;
+}
+
+.tl-card {
+  flex: 1;
+  min-width: 0;
+  background: #FAF5E9;
+  border-radius: 14rpx;
+  padding: 14rpx 20rpx;
+  margin-bottom: 8rpx;
+}
+
+.card-today {
+  background: #F9E3EB;
+}
+
+.tl-kicker {
+  font-size: 20rpx;
+  color: #A59F8C;
+}
+
+.card-today .tl-kicker {
+  color: #D4537E;
+}
+
+.tl-title {
+  font-size: 28rpx;
+  color: #3D3A34;
+  margin-top: 2rpx;
+}
+
+.tl-desc {
+  font-size: 22rpx;
+  color: #9B988F;
+  margin-top: 4rpx;
+}
+
+.tl-progress {
+  display: flex;
+  gap: 24rpx;
+  font-size: 22rpx;
+  color: #716C5A;
+  margin-top: 6rpx;
+}
+
+.login-tip {
+  text-align: center;
+  padding: 60rpx 40rpx;
+}
+
+.login-tip-text {
+  color: #6B675E;
+  margin-bottom: 30rpx;
+}
+
+.login-btn {
+  display: block;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+  margin-bottom: 16rpx;
+}
+
+.fab {
+  position: fixed;
+  right: 40rpx;
+  bottom: 60rpx;
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 50%;
+  background: #D4537E;
+  color: #FFFFFF;
+  font-size: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(212, 83, 126, 0.35);
+}
