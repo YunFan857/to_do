@@ -326,14 +326,23 @@ input,textarea,select{font:inherit;color:inherit}
 .cal-allday .label{font-size:10px;color:var(--text-3);display:flex;align-items:center;justify-content:flex-end;padding-right:6px}
 .cal-allday-cell{border-left:1px solid var(--border);padding:3px;display:flex;flex-direction:column;gap:2px;align-items:stretch}
 .cal-allday-chip{width:100%;font-size:10.5px;line-height:1.4;border-radius:5px;padding:1px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent;cursor:pointer;text-align:left}
-.cal-allday-chip.done{opacity:.5;text-decoration:line-through}
+.cal-allday-chip.done{opacity:.5}
+.cal-allday-chip.has-ck{display:flex;align-items:center;gap:4px}
+.cal-allday-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-allday-chip.done .cal-allday-text{text-decoration:line-through}
+.cal-ck{flex:none;position:relative;width:13px;height:13px;border-radius:50%;border:1.5px solid currentColor;background:transparent;cursor:pointer;padding:0}
+.cal-ck::after{content:'';position:absolute;inset:2px;border-radius:50%;background:currentColor;transform:scale(0);transition:transform var(--t)}
+.cal-evt.done .cal-ck::after,.cal-allday-chip.done .cal-ck::after{transform:scale(1)}
 .cal-body{display:grid;grid-template-columns:54px repeat(7,minmax(92px,1fr))}
 .cal-gutter{position:relative}
 .cal-hour{height:48px;text-align:right;padding:2px 6px 0 0;font-size:10.5px;color:var(--text-3);font-variant-numeric:tabular-nums}
 .cal-day{position:relative;border-left:1px solid var(--border);background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 47px,var(--border) 47px,var(--border) 48px);cursor:crosshair}
 .cal-day.today{background-color:rgba(15,118,110,.035)}
 .cal-evt{position:absolute;left:3px;right:3px;height:22px;border-radius:6px;padding:2px 6px;font-size:11px;line-height:18px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;border-left:3px solid;cursor:pointer;transition:transform var(--t)}
-.cal-evt.done{opacity:.55;text-decoration:line-through}
+.cal-evt.done{opacity:.55}
+.cal-evt.has-ck{display:flex;align-items:center;gap:4px}
+.cal-evt-text{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cal-evt.done .cal-evt-text{text-decoration:line-through}
 .cal-evt:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
 .cal-now{position:absolute;left:0;right:0;height:2px;background:var(--danger);z-index:3}
 .cal-now::before{content:'';position:absolute;left:-4px;top:-3px;width:8px;height:8px;background:var(--danger);border-radius:50%}
@@ -1410,6 +1419,7 @@ input,textarea,select{font:inherit;color:inherit}
   const CAL_END_HOUR = 24;
   const CAL_HOUR_H = 48;
   const CAL_EVENT_H = 22;
+  const CAL_EVT_GAP = 2; // 相邻卡片最小间隙；时间过近时按此向下顺延
   const CAL_COLORS = [
     {key:'teal',    label:'薄荷',   bg:'#dff2ea', fg:'#0f766e', border:'#0f766e'},
     {key:'blue',    label:'雾蓝',   bg:'#e3edfa', fg:'#2f6cb3', border:'#3f7dcc'},
@@ -1487,7 +1497,7 @@ input,textarea,select{font:inherit;color:inherit}
   function calAllDayItems(iso){
     const items = [];
     (state.events||[]).forEach(ev=>{
-      if(ev.allDay && ev.date<=iso && (ev.endDate||ev.date)>=iso) items.push({kind:'event', id:ev.id, title:ev.title, color:ev.color||'teal'});
+      if(ev.allDay && ev.date<=iso && (ev.endDate||ev.date)>=iso) items.push({kind:'event', id:ev.id, title:ev.title, color:ev.color||'teal', done:!!ev.done});
     });
     (state.todos||[]).forEach(t=>{
       if(todoTime(t)) return; // 有提醒时间的待办放到时间格，不进全天条
@@ -1502,10 +1512,14 @@ input,textarea,select{font:inherit;color:inherit}
     if(it.kind==='todo'){
       const c = CAL_TYPE_COLORS[it.type] || CAL_TYPE_COLORS.once;
       const icon = (TYPE_META[it.type] && TYPE_META[it.type].icon) || '📌';
-      return '<button type="button" class="cal-allday-chip'+(it.done?' done':'')+'" data-cal-todo="'+it.id+'" data-cal-type="'+it.type+'" style="background:'+c[0]+';color:'+c[1]+'" title="'+esc(it.title)+'">'+icon+' '+esc(it.title)+'</button>';
+      return '<div class="cal-allday-chip has-ck'+(it.done?' done':'')+'" data-cal-todo="'+it.id+'" data-cal-type="'+it.type+'" style="background:'+c[0]+';color:'+c[1]+'" title="'+esc(it.title)+'">'
+        + '<button type="button" class="cal-ck" data-cal-toggle="'+it.id+'" aria-label="'+(it.done?'撤销完成':'标记完成')+'"></button>'
+        + '<span class="cal-allday-text">'+icon+' '+esc(it.title)+'</span></div>';
     }
     const c = CAL_COLORS.find(x=>x.key===it.color) || CAL_COLORS[0];
-    return '<button type="button" class="cal-allday-chip" data-evt="'+it.id+'" style="background:'+c.bg+';color:'+c.fg+'" title="'+esc(it.title)+'">🗓️ '+esc(it.title)+'</button>';
+    return '<div class="cal-allday-chip has-ck'+(it.done?' done':'')+'" data-evt="'+it.id+'" style="background:'+c.bg+';color:'+c.fg+'" title="'+esc(it.title)+'">'
+      + '<button type="button" class="cal-ck" data-evt-toggle="'+it.id+'" aria-label="'+(it.done?'撤销完成':'标记完成')+'"></button>'
+      + '<span class="cal-allday-text">🗓️ '+esc(it.title)+'</span></div>';
   }
 
   function renderCalendar(){
@@ -1562,27 +1576,42 @@ input,textarea,select{font:inherit;color:inherit}
     days.forEach(dd=>{
       const isToday = dd.iso===todayIso;
       body += '<div class="cal-day'+(isToday?' today':'')+'" data-date="'+dd.iso+'">';
-      const evs = (state.events || []).filter(e=>!e.allDay && e.date<=dd.iso && (e.endDate||e.date)>=dd.iso);
-      evs.forEach(ev=>{
+      // 当天的日程 + 带提醒时间的待办合并按时间排序；时间过近时向下顺延，避免卡片叠盖
+      const laneItems = [];
+      (state.events || []).forEach(ev=>{
         if(ev.allDay) return; // all-day events not drawn on the grid
-        const c = CAL_COLORS.find(x=>x.key===ev.color) || CAL_COLORS[0];
+        if(!(ev.date<=dd.iso && (ev.endDate||ev.date)>=dd.iso)) return;
         const sm = minutesFromHHMM(ev.start);
         if(sm < calViewStartHour*60 || sm >= CAL_END_HOUR*60) return;
-        const top = (sm - calViewStartHour*60)/60*CAL_HOUR_H;
-        const fullTitle = esc(ev.title)+' '+esc(ev.start);
-        body += '<div class="cal-evt" style="top:'+top+'px;background:'+c.bg+';color:'+c.fg+';border-color:'+c.border+'" data-evt="'+ev.id+'" title="'+fullTitle+'">'+esc(ev.title)+'</div>';
+        laneItems.push({sm, draw(top){
+          const c = CAL_COLORS.find(x=>x.key===ev.color) || CAL_COLORS[0];
+          const fullTitle = esc(ev.title)+' '+esc(ev.start);
+          return '<div class="cal-evt has-ck'+(ev.done?' done':'')+'" style="top:'+top+'px;background:'+c.bg+';color:'+c.fg+';border-color:'+c.border+'" data-evt="'+ev.id+'" title="'+fullTitle+'">'
+            + '<button type="button" class="cal-ck" data-evt-toggle="'+ev.id+'" aria-label="'+(ev.done?'撤销完成':'标记完成')+'"></button>'
+            + '<span class="cal-evt-text">'+esc(ev.title)+'</span></div>';
+        }});
       });
-      // 带提醒时间的待办 → 落在对应时间格
       calTimedTodos(dd.iso).forEach(t=>{
-        const c = CAL_TYPE_COLORS[t.type] || CAL_TYPE_COLORS.once;
-        const tm = todoTime(t);
-        const sm = minutesFromHHMM(tm);
+        const sm = minutesFromHHMM(todoTime(t));
         if(sm < calViewStartHour*60 || sm >= CAL_END_HOUR*60) return;
-        const done = t.type==='once' ? !!t.completed : isDone(t);
-        const top = (sm - calViewStartHour*60)/60*CAL_HOUR_H;
-        const icon = (TYPE_META[t.type] && TYPE_META[t.type].icon) || '📌';
-        const fullTitle = esc(t.title)+' '+esc(tm);
-        body += '<div class="cal-evt'+(done?' done':'')+'" style="top:'+top+'px;background:'+c[0]+';color:'+c[1]+';border-color:'+c[1]+'" data-cal-todo="'+t.id+'" data-cal-type="'+t.type+'" title="'+fullTitle+'">'+icon+' '+esc(t.title)+'</div>';
+        laneItems.push({sm, draw(top){
+          const c = CAL_TYPE_COLORS[t.type] || CAL_TYPE_COLORS.once;
+          const tm = todoTime(t);
+          const done = t.type==='once' ? !!t.completed : isDone(t);
+          const icon = (TYPE_META[t.type] && TYPE_META[t.type].icon) || '📌';
+          const fullTitle = esc(t.title)+' '+esc(tm);
+          return '<div class="cal-evt has-ck'+(done?' done':'')+'" style="top:'+top+'px;background:'+c[0]+';color:'+c[1]+';border-color:'+c[1]+'" data-cal-todo="'+t.id+'" data-cal-type="'+t.type+'" title="'+fullTitle+'">'
+            + '<button type="button" class="cal-ck" data-cal-toggle="'+t.id+'" aria-label="'+(done?'撤销完成':'标记完成')+'"></button>'
+            + '<span class="cal-evt-text">'+icon+' '+esc(t.title)+'</span></div>';
+        }});
+      });
+      laneItems.sort((a,b)=>a.sm-b.sm);
+      let lastTop = -CAL_EVENT_H - CAL_EVT_GAP;
+      laneItems.forEach(it=>{
+        const wanted = (it.sm - calViewStartHour*60)/60*CAL_HOUR_H;
+        const top = Math.max(wanted, lastTop + CAL_EVENT_H + CAL_EVT_GAP);
+        lastTop = top;
+        body += it.draw(top);
       });
       if(isToday && nowMin>=calViewStartHour*60 && nowMin<CAL_END_HOUR*60){
         const top = (nowMin - calViewStartHour*60)/60*CAL_HOUR_H;
@@ -1707,9 +1736,20 @@ input,textarea,select{font:inherit;color:inherit}
     save(); render();
     showToast('已删除日程');
   }
+  // 日历卡片上的圆圈：标记/撤销整条日程的完成态（视觉划线，不影响提醒）
+  function toggleEventDone(id){
+    const ev = state.events.find(e=>e.id===id);
+    if(!ev) return;
+    ev.done = !ev.done;
+    save(); render();
+  }
 
   // Click on empty grid cell → quick-create at the clicked time (snapped to 30 min, end +1h)
   function calBodyClick(e){
+    const ckEl = e.target.closest('[data-cal-toggle]');
+    if(ckEl){ toggle(ckEl.dataset.calToggle); return; }
+    const evtCk = e.target.closest('[data-evt-toggle]');
+    if(evtCk){ toggleEventDone(evtCk.dataset.evtToggle); return; }
     const todoEl = e.target.closest('[data-cal-todo]');
     if(todoEl){ openModal(todoEl.dataset.calType, todoEl.dataset.calTodo); return; }
     const evtEl = e.target.closest('[data-evt]');
@@ -2573,6 +2613,10 @@ input,textarea,select{font:inherit;color:inherit}
     document.getElementById('cal-next').addEventListener('click', ()=>{ const a = calWeekAnchorIso || calTodayIso(); calWeekAnchorIso = shiftAnchor(a, 7); renderCalendar(); });
     document.getElementById('cal-body').addEventListener('click', calBodyClick);
     document.getElementById('cal-allday').addEventListener('click', e=>{
+      const ckEl = e.target.closest('[data-cal-toggle]');
+      if(ckEl){ toggle(ckEl.dataset.calToggle); return; }
+      const evtCk = e.target.closest('[data-evt-toggle]');
+      if(evtCk){ toggleEventDone(evtCk.dataset.evtToggle); return; }
       const todoChip = e.target.closest('[data-cal-todo]');
       if(todoChip){ openModal(todoChip.dataset.calType, todoChip.dataset.calTodo); return; }
       const evtChip = e.target.closest('[data-evt]');
