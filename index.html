@@ -900,8 +900,18 @@ input,textarea,select{font:inherit;color:inherit}
         storageFallbackMessage = '请重启应用以启用多项目本机保存，当前修改会临时保留';
         cachePendingState();
       } else if(hasPendingSync && browserState){
-        state = browserState;
-        await persist();
+        // Safety guard: never flush an empty browser snapshot over real server data.
+        // This is what wiped the local file when an empty fallback cache got marked pending.
+        const serverHasData = (Array.isArray(stored.todos) && stored.todos.length)
+          || (Array.isArray(stored.projects) && stored.projects.length)
+          || (Array.isArray(stored.events) && stored.events.length);
+        const browserEmpty = !browserState.todos.length && !browserState.projects.length && !browserState.events.length;
+        if(serverHasData && browserEmpty){
+          state = {todos: stored.todos, projects:normalizeProjects(stored.projects, stored.projectTimer), events: Array.isArray(stored.events) ? stored.events : []};
+        } else {
+          state = browserState;
+          await persist();
+        }
         localStorage.removeItem(KEY);
         localStorage.removeItem(PENDING_SYNC_KEY);
       // First launch after the upgrade: move old browser data into the local file.
@@ -925,13 +935,32 @@ input,textarea,select{font:inherit;color:inherit}
           events: Array.isArray(parsed.events) ? parsed.events : []
         };
       }catch(err){ console.warn('load failed', err); }
-      try{ cachePendingState(); }
-      catch(err){ /* Saving will report a storage error if the user changes data. */ }
+      // Only mark pending sync if the browser actually holds a cached snapshot.
+      // Caching the initial empty state here would later overwrite the real local file.
+      if(localStorage.getItem(KEY)){ try{ cachePendingState(); } catch(err){ /* ignore */ } }
       console.warn('local file storage unavailable', e);
     }
   }
+  // Runtime timer handles must not leak into the persisted snapshot
+  // (a stale numeric timeoutId in the file is meaningless after reload).
+  function serializableState(){
+    return {
+      version:3,
+      todos: state.todos.map(t=>{
+        if(t.reminder && (t.reminder.timeoutId!=null || t.reminder.snoozeTimeoutId!=null)){
+          const reminder = Object.assign({}, t.reminder);
+          delete reminder.timeoutId;
+          delete reminder.snoozeTimeoutId;
+          return Object.assign({}, t, {reminder: reminder});
+        }
+        return t;
+      }),
+      projects: state.projects,
+      events: state.events
+    };
+  }
   function save(){
-    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects, events:state.events});
+    const snapshot = JSON.stringify(serializableState());
     saveQueue = saveQueue.then(async () => {
       if(storageMode === 'browser-fallback'){
         cachePendingState(snapshot);

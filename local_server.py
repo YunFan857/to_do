@@ -2,8 +2,10 @@
 """Local-only data service for 我的待办."""
 
 import argparse
+import datetime
 import json
 import os
+import shutil
 import tempfile
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -11,6 +13,29 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 DATA_FILE = Path.home() / "Library" / "Application Support" / "我的待办" / "data.json"
+BACKUP_KEEP = 10
+
+
+def backup_before_write():
+    """Keep a dated copy of the last non-empty state (first save of each day)."""
+    if not DATA_FILE.exists():
+        return
+    try:
+        current = json.loads(DATA_FILE.read_text(encoding="utf-8"))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return
+    if not any(current.get(key) for key in ("todos", "projects", "events")):
+        return
+    stamp = datetime.date.today().strftime("%Y-%m-%d")
+    backup = DATA_FILE.parent / f"data.backup-{stamp}.json"
+    try:
+        if not backup.exists():
+            shutil.copy2(DATA_FILE, backup)
+        backups = sorted(DATA_FILE.parent.glob("data.backup-*.json"))
+        for old in backups[:-BACKUP_KEEP]:
+            old.unlink(missing_ok=True)
+    except OSError:
+        pass
 
 
 def normalized_state(data):
@@ -85,6 +110,7 @@ class Handler(SimpleHTTPRequestHandler):
                 raise ValueError("data too large")
             state = normalized_state(json.loads(self.rfile.read(length).decode("utf-8")))
             DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+            backup_before_write()
             fd, temp_name = tempfile.mkstemp(prefix="data.", suffix=".tmp", dir=DATA_FILE.parent)
             try:
                 with os.fdopen(fd, "w", encoding="utf-8") as fh:
