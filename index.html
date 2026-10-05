@@ -232,8 +232,8 @@ input,textarea,select{font:inherit;color:inherit}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== Reminder modal ===== */
-.reminder-modal{max-width:360px}
 .reminder-hint{margin-top:10px;padding:9px 12px;background:var(--reminder-soft);border-radius:var(--radius-xs);color:#8a5c10;font-size:12px;line-height:1.55;display:flex;gap:8px;align-items:flex-start}
+.reminder-hint.off{background:var(--card-2);color:var(--text-2)}
 .reminder-hint .hint-icon{flex-shrink:0;font-size:14px;line-height:1.55}
 .reminder-hint b{color:#6e4708;font-weight:600}
 
@@ -602,6 +602,18 @@ input,textarea,select{font:inherit;color:inherit}
             <input type="number" id="f-year-day" name="annualDay" min="1" max="31" value="1" aria-label="日期">
           </div>
         </div>
+
+        <div class="form-group">
+          <label for="f-remind">🔔 提醒时间<span class="hint">(可选 · <span id="f-remind-tz">按北京时间</span>)</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="time" id="f-remind" name="remindTime" style="flex:1">
+            <button type="button" class="btn btn-ghost hidden" id="f-remind-clear">清除</button>
+          </div>
+          <div class="reminder-hint" id="f-remind-hint">
+            <span class="hint-icon">💡</span>
+            <span id="f-remind-hint-text"></span>
+          </div>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-danger hidden" id="delete-btn">删除</button>
@@ -667,37 +679,6 @@ input,textarea,select{font:inherit;color:inherit}
         <button type="submit" class="btn btn-progress">保存</button>
       </div>
     </form>
-  </div>
-</div>
-
-<!-- Reminder config modal -->
-<div class="modal hidden" id="reminder-modal">
-  <div class="modal-content reminder-modal">
-    <div class="modal-header">
-      <h2>🔔 设置提醒</h2>
-      <button class="icon-btn" id="reminder-close" aria-label="关闭">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label for="r-time">提醒时间 <span class="hint" id="r-timezone-label">（按北京时间）</span></label>
-        <input type="time" id="r-time" value="09:00">
-      </div>
-      <div class="reminder-hint" id="r-hint">
-        <span class="hint-icon">💡</span>
-        <span id="r-hint-text"></span>
-      </div>
-      <div class="form-group" id="r-perm-group" hidden>
-        <div class="reminder-hint" style="background:var(--danger-soft);color:var(--danger)">
-          <span class="hint-icon">⚠️</span>
-          <span id="r-perm-text">系统通知权限未开启，将无法弹出系统通知（仍会播放声音和顶部横幅）</span>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-danger hidden" id="r-clear">清除提醒</button>
-      <button type="button" class="btn btn-ghost" id="r-cancel">取消</button>
-      <button type="button" class="btn btn-primary" id="r-save">保存</button>
-    </div>
   </div>
 </div>
 
@@ -980,7 +961,7 @@ input,textarea,select{font:inherit;color:inherit}
     });
   }
   async function persist(){
-    const snapshot = JSON.stringify({version:3, todos:state.todos, projects:state.projects, events:state.events});
+    const snapshot = JSON.stringify(serializableState());
     const response = await fetch(API_ROOT+'/api/state', {
       method:'PUT',
       headers:{'Content-Type':'application/json'},
@@ -1423,6 +1404,9 @@ input,textarea,select{font:inherit;color:inherit}
 
   // ====== Calendar (week view + events) ======
   const CAL_START_HOUR = 6;
+  // Effective grid start for the current week: pulled earlier when a timed
+  // item (todo reminder or event) starts before 06:00, so it stays visible.
+  let calViewStartHour = CAL_START_HOUR;
   const CAL_END_HOUR = 24;
   const CAL_HOUR_H = 48;
   const CAL_EVENT_H = 22;
@@ -1533,6 +1517,15 @@ input,textarea,select{font:inherit;color:inherit}
     const emptyEl = document.getElementById('cal-empty');
     if(!headEl || !bodyEl) return;
     const days = calWeekDates();
+    // Extend the visible grid earlier if anything this week starts before 06:00
+    let earliestMin = CAL_START_HOUR*60;
+    days.forEach(dd=>{
+      (state.events||[]).forEach(ev=>{
+        if(!ev.allDay && ev.date<=dd.iso && (ev.endDate||ev.date)>=dd.iso) earliestMin = Math.min(earliestMin, minutesFromHHMM(ev.start));
+      });
+      calTimedTodos(dd.iso).forEach(t=>{ earliestMin = Math.min(earliestMin, minutesFromHHMM(todoTime(t))); });
+    });
+    calViewStartHour = Math.max(0, Math.min(CAL_START_HOUR, Math.floor(earliestMin/60)));
     const todayIso = calTodayIso();
     const nowMin = calNowMinutes();
     const dows = ['周日','周一','周二','周三','周四','周五','周六'];
@@ -1560,7 +1553,7 @@ input,textarea,select{font:inherit;color:inherit}
 
     // gutter
     let body = '<div class="cal-gutter">';
-    for(let h=CAL_START_HOUR; h<CAL_END_HOUR; h++){
+    for(let h=calViewStartHour; h<CAL_END_HOUR; h++){
       body += '<div class="cal-hour">'+pad2(h)+':00</div>';
     }
     body += '</div>';
@@ -1574,8 +1567,8 @@ input,textarea,select{font:inherit;color:inherit}
         if(ev.allDay) return; // all-day events not drawn on the grid
         const c = CAL_COLORS.find(x=>x.key===ev.color) || CAL_COLORS[0];
         const sm = minutesFromHHMM(ev.start);
-        if(sm < CAL_START_HOUR*60 || sm >= CAL_END_HOUR*60) return;
-        const top = (sm - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+        if(sm < calViewStartHour*60 || sm >= CAL_END_HOUR*60) return;
+        const top = (sm - calViewStartHour*60)/60*CAL_HOUR_H;
         const fullTitle = esc(ev.title)+' '+esc(ev.start);
         body += '<div class="cal-evt" style="top:'+top+'px;background:'+c.bg+';color:'+c.fg+';border-color:'+c.border+'" data-evt="'+ev.id+'" title="'+fullTitle+'">'+esc(ev.title)+'</div>';
       });
@@ -1584,15 +1577,15 @@ input,textarea,select{font:inherit;color:inherit}
         const c = CAL_TYPE_COLORS[t.type] || CAL_TYPE_COLORS.once;
         const tm = todoTime(t);
         const sm = minutesFromHHMM(tm);
-        if(sm < CAL_START_HOUR*60 || sm >= CAL_END_HOUR*60) return;
+        if(sm < calViewStartHour*60 || sm >= CAL_END_HOUR*60) return;
         const done = t.type==='once' ? !!t.completed : isDone(t);
-        const top = (sm - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+        const top = (sm - calViewStartHour*60)/60*CAL_HOUR_H;
         const icon = (TYPE_META[t.type] && TYPE_META[t.type].icon) || '📌';
         const fullTitle = esc(t.title)+' '+esc(tm);
         body += '<div class="cal-evt'+(done?' done':'')+'" style="top:'+top+'px;background:'+c[0]+';color:'+c[1]+';border-color:'+c[1]+'" data-cal-todo="'+t.id+'" data-cal-type="'+t.type+'" title="'+fullTitle+'">'+icon+' '+esc(t.title)+'</div>';
       });
-      if(isToday && nowMin>=CAL_START_HOUR*60 && nowMin<CAL_END_HOUR*60){
-        const top = (nowMin - CAL_START_HOUR*60)/60*CAL_HOUR_H;
+      if(isToday && nowMin>=calViewStartHour*60 && nowMin<CAL_END_HOUR*60){
+        const top = (nowMin - calViewStartHour*60)/60*CAL_HOUR_H;
         body += '<div class="cal-now" style="top:'+top+'px"></div>';
       }
       body += '</div>';
@@ -1718,7 +1711,7 @@ input,textarea,select{font:inherit;color:inherit}
   // Click on empty grid cell → quick-create at the clicked time (snapped to 30 min, end +1h)
   function calBodyClick(e){
     const todoEl = e.target.closest('[data-cal-todo]');
-    if(todoEl){ switchView(todoEl.dataset.calType); return; }
+    if(todoEl){ openModal(todoEl.dataset.calType, todoEl.dataset.calTodo); return; }
     const evtEl = e.target.closest('[data-evt]');
     if(evtEl){
       openEventModal({id: evtEl.dataset.evt});
@@ -1729,8 +1722,8 @@ input,textarea,select{font:inherit;color:inherit}
     const date = dayEl.dataset.date;
     const rect = dayEl.getBoundingClientRect();
     const y = e.clientY - rect.top + dayEl.scrollTop;
-    let mins = CAL_START_HOUR*60 + Math.floor(y / CAL_HOUR_H * 60);
-    mins = Math.max(CAL_START_HOUR*60, Math.min((CAL_END_HOUR-1)*60+30, Math.round(mins/30)*30));
+    let mins = calViewStartHour*60 + Math.floor(y / CAL_HOUR_H * 60);
+    mins = Math.max(calViewStartHour*60, Math.min((CAL_END_HOUR-1)*60+30, Math.round(mins/30)*30));
     const start = hhmmFromMinutes(mins);
     openEventModal({date: date, start: start});
   }
@@ -1808,6 +1801,7 @@ input,textarea,select{font:inherit;color:inherit}
       form.monthDay.value = t.monthDay || 1;
       form.annualMonth.value = t.annualMonth || 1;
       form.annualDay.value = t.annualDay || 1;
+      form.remindTime.value = (t.reminder && t.reminder.time) || '';
     } else {
       titleEl.textContent = '新建待办';
       delBtn.classList.add('hidden');
@@ -1819,9 +1813,13 @@ input,textarea,select{font:inherit;color:inherit}
       form.monthDay.value = nowParts.day;
       form.annualMonth.value = nowParts.month;
       form.annualDay.value = nowParts.day;
+      form.remindTime.value = '';
     }
+    const remindTz = document.getElementById('f-remind-tz');
+    if(remindTz) remindTz.textContent = '按'+activeTimezone().capital+'时间';
     updateTypeFields();
     updateAnnualDayLimit();
+    updateRemindHint();
     modal.classList.remove('hidden');
     setTimeout(()=>form.title.focus(),60);
   }
@@ -1871,6 +1869,8 @@ input,textarea,select{font:inherit;color:inherit}
         t.annualMonth = Math.max(1, Math.min(12, Number(form.annualMonth.value)||1));
         t.annualDay = Math.max(1, Math.min(daysInMonth(2028, t.annualMonth), Number(form.annualDay.value)||1));
       }
+      setTodoReminder(t, form.remindTime.value || null);
+      if(t.reminder && t.reminder.enabled) requestNotifPerm();
       showToast('已更新');
     } else {
       const t = {
@@ -1886,8 +1886,9 @@ input,textarea,select{font:inherit;color:inherit}
         t.annualMonth = Math.max(1, Math.min(12, Number(form.annualMonth.value)||1));
         t.annualDay = Math.max(1, Math.min(daysInMonth(2028, t.annualMonth), Number(form.annualDay.value)||1));
       }
+      setTodoReminder(t, form.remindTime.value || null);
       state.todos.push(t);
-      if(t.reminder && t.reminder.enabled) scheduleReminder(t);
+      if(t.reminder && t.reminder.enabled) requestNotifPerm();
       showToast('已添加');
     }
     save(); render(); closeModal();
@@ -2387,94 +2388,48 @@ input,textarea,select{font:inherit;color:inherit}
   }
 
   // ====== Reminder modal ======
-  let reminderTodoId = null;
-  function openReminderModal(id){
-    const todo = state.todos.find(t => t.id === id);
-    if(!todo) return;
-    reminderTodoId = id;
-    const timeInput = document.getElementById('r-time');
-    const hintText = document.getElementById('r-hint-text');
-    const clearBtn = document.getElementById('r-clear');
-    const permGroup = document.getElementById('r-perm-group');
-    const permText = document.getElementById('r-perm-text');
-    document.getElementById('r-timezone-label').textContent = '（按'+activeTimezone().capital+'时间）';
-
-    if(todo.reminder && todo.reminder.time){
-      timeInput.value = todo.reminder.time;
-      clearBtn.classList.remove('hidden');
-    } else {
-      timeInput.value = '09:00';
-      clearBtn.classList.add('hidden');
-    }
-    hintText.innerHTML = getReminderHint(todo, timeInput.value);
-
-    // Notification permission status
-    if(typeof Notification === 'undefined'){
-      permGroup.hidden = false;
-      permText.textContent = '当前浏览器不支持系统通知 API（将仅播放声音和顶部横幅）';
-    } else if(Notification.permission === 'denied'){
-      permGroup.hidden = false;
-      permText.textContent = '系统通知权限已被拒绝，如需开启请在浏览器偏好中允许本站点通知';
-    } else if(Notification.permission === 'default'){
-      permGroup.hidden = true;
-      // Request lazily when user saves; just initialize Audio on first interaction now
-      getAudioContext();
-    } else {
-      permGroup.hidden = true;
-    }
-
-    document.getElementById('reminder-modal').classList.remove('hidden');
-  }
-  function closeReminderModal(){
-    document.getElementById('reminder-modal').classList.add('hidden');
-    reminderTodoId = null;
-  }
-  function getReminderHint(todo, time){
-    time = time || (todo.reminder && todo.reminder.time) || '09:00';
-    const zone = activeTimezone().capital+'时间';
-    if(todo.type === 'once'){
-      const ds = todo.dueDate || today();
-      return '按 <b>'+zone+'</b>，将在 <b>'+ds+' '+time+'</b> 提醒一次，到点后会自动关闭';
-    }
-    if(todo.type === 'daily')   return '按 <b>'+zone+'</b>，每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
-    if(todo.type === 'weekly')  return '按 <b>'+zone+'</b>，每周 <b>'+wdName(todo.weekDay==null?1:todo.weekDay)+' '+time+'</b> 提醒，完成本周后本周不再响';
-    if(todo.type === 'monthly') return '按 <b>'+zone+'</b>，每月 <b>'+(todo.monthDay||1)+' 日 '+time+'</b> 提醒，完成本月后本月不再响';
-    if(todo.type === 'annual')  return '按 <b>'+zone+'</b>，每年 <b>'+(todo.annualMonth||1)+' 月 '+(todo.annualDay||1)+' 日 '+time+'</b> 提醒，完成今年后今年不再响';
-    return '';
-  }
-  function saveReminder(){
-    if(!reminderTodoId) return;
-    const todo = state.todos.find(t => t.id === reminderTodoId);
-    if(!todo) return;
-    const time = document.getElementById('r-time').value;
-    if(!time){ showToast('请选择提醒时间'); return; }
+  // ====== Reminder time field (merged into the todo modal) ======
+  function setTodoReminder(todo, time){
     const prev = todo.reminder || {};
-    todo.reminder = {
-      enabled: true,
-      time: time,
-      lastFiredPeriod: prev.lastFiredPeriod || null
-    };
-    save();
-    scheduleReminder(todo);
-    render();
-    // Request notification permission (fire-and-forget; user gesture already happened)
-    requestNotifPerm();
-    closeReminderModal();
-    showToast('已设置提醒：'+activeTimezone().capital+'时间 '+time);
-  }
-  function clearReminder(){
-    if(!reminderTodoId) return;
-    const todo = state.todos.find(t => t.id === reminderTodoId);
-    if(!todo) return;
-    if(todo.reminder){
-      if(todo.reminder.timeoutId) clearTimeout(todo.reminder.timeoutId);
-      if(todo.reminder.snoozeTimeoutId) clearTimeout(todo.reminder.snoozeTimeoutId);
+    if(prev.timeoutId) clearTimeout(prev.timeoutId);
+    if(prev.snoozeTimeoutId) clearTimeout(prev.snoozeTimeoutId);
+    if(time){
+      todo.reminder = {enabled:true, time:time, lastFiredPeriod: prev.lastFiredPeriod || null};
+      scheduleReminder(todo);
+    } else {
+      todo.reminder = null;
     }
-    todo.reminder = null;
-    save();
-    render();
-    closeReminderModal();
-    showToast('提醒已清除');
+  }
+  function updateRemindHint(){
+    const timeInput = document.getElementById('f-remind');
+    const box = document.getElementById('f-remind-hint');
+    const text = document.getElementById('f-remind-hint-text');
+    const clearBtn = document.getElementById('f-remind-clear');
+    if(!timeInput || !box || !text) return;
+    const time = timeInput.value;
+    if(!time){
+      box.classList.add('off');
+      text.innerHTML = '未设置时间：不响铃，将显示在日历「全天」栏。';
+      if(clearBtn) clearBtn.classList.add('hidden');
+      return;
+    }
+    box.classList.remove('off');
+    if(clearBtn) clearBtn.classList.remove('hidden');
+    const zone = activeTimezone().capital+'时间';
+    const type = currentType();
+    let when;
+    if(type === 'once')         when = '将在 <b>'+((document.getElementById('f-due')||{}).value || today())+' '+time+'</b> 提醒一次，到点后自动关闭';
+    else if(type === 'daily')   when = '每天 <b>'+time+'</b> 提醒，当天打卡后当天不再响';
+    else if(type === 'weekly')  when = '每周 <b>'+wdName(document.getElementById('f-weekday').value)+' '+time+'</b> 提醒';
+    else if(type === 'monthly') when = '每月 <b>'+((document.getElementById('f-monthday')||{value:1}).value||1)+' 日 '+time+'</b> 提醒';
+    else                        when = '每年 <b>'+((document.getElementById('f-year-month')||{value:1}).value||1)+' 月 '+((document.getElementById('f-year-day')||{value:1}).value||1)+' 日 '+time+'</b> 提醒';
+    text.innerHTML = '按 '+zone+'，'+when+'，并落在日历 <b>'+time+'</b> 时间格。';
+  }
+  function openModalForReminder(id){
+    const t = state.todos.find(x=>x.id===id);
+    if(!t) return;
+    openModal(t.type, id);
+    setTimeout(()=>{ const el = document.getElementById('f-remind'); if(el) el.focus(); }, 80);
   }
 
   // ====== Settings modal (sound & notification) ======
@@ -2619,7 +2574,7 @@ input,textarea,select{font:inherit;color:inherit}
     document.getElementById('cal-body').addEventListener('click', calBodyClick);
     document.getElementById('cal-allday').addEventListener('click', e=>{
       const todoChip = e.target.closest('[data-cal-todo]');
-      if(todoChip){ switchView(todoChip.dataset.calType); return; }
+      if(todoChip){ openModal(todoChip.dataset.calType, todoChip.dataset.calTodo); return; }
       const evtChip = e.target.closest('[data-evt]');
       if(evtChip) openEventModal({id: evtChip.dataset.evt});
     });
@@ -2702,7 +2657,7 @@ input,textarea,select{font:inherit;color:inherit}
         const action = actionEl.dataset.action;
         if(action==='toggle') toggle(id);
         else if(action==='edit') openModal(null, id);
-        else if(action==='reminder') openReminderModal(id);
+        else if(action==='reminder') openModalForReminder(id);
         else if(action==='delete'){
           if(confirm('确定删除这个待办？')) del(id);
         }
@@ -2717,19 +2672,16 @@ input,textarea,select{font:inherit;color:inherit}
       });
     });
 
-    // Reminder modal events
-    document.getElementById('reminder-close').addEventListener('click', closeReminderModal);
-    document.getElementById('r-cancel').addEventListener('click', closeReminderModal);
-    document.getElementById('r-save').addEventListener('click', saveReminder);
-    document.getElementById('r-clear').addEventListener('click', clearReminder);
-    document.getElementById('reminder-modal').addEventListener('click', e=>{
-      if(e.target.id==='reminder-modal') closeReminderModal();
+    // Reminder time field inside the todo modal (replaces the old standalone reminder modal)
+    document.getElementById('f-remind').addEventListener('input', updateRemindHint);
+    document.getElementById('f-remind-clear').addEventListener('click', ()=>{
+      const el = document.getElementById('f-remind');
+      el.value = '';
+      updateRemindHint();
+      el.focus();
     });
-    document.getElementById('r-time').addEventListener('input', e=>{
-      if(!reminderTodoId) return;
-      const todo = state.todos.find(t => t.id === reminderTodoId);
-      if(todo) document.getElementById('r-hint-text').innerHTML = getReminderHint(todo, e.target.value);
-    });
+    // Per-type fields & type tabs also affect the hint text (change bubbles up to the form)
+    document.getElementById('todo-form').addEventListener('change', updateRemindHint);
 
     // Alert banner
     document.getElementById('alert-close').addEventListener('click', dismissAlert);
@@ -2767,17 +2719,15 @@ input,textarea,select{font:inherit;color:inherit}
     // Global shortcuts
     document.addEventListener('keydown', e=>{
       const modalOpen = !document.getElementById('modal').classList.contains('hidden');
-      const reminderOpen = !document.getElementById('reminder-modal').classList.contains('hidden');
       const projectModalOpen = !document.getElementById('project-modal').classList.contains('hidden');
       const milestoneModalOpen = !document.getElementById('milestone-modal').classList.contains('hidden');
       const settingsOpen = !document.getElementById('settings-modal').classList.contains('hidden');
       if(e.key==='Escape' && settingsOpen){ closeSettingsModal(); return; }
-      if(e.key==='Escape' && reminderOpen){ closeReminderModal(); return; }
       if(e.key==='Escape' && milestoneModalOpen){ closeMilestoneModal(); return; }
       if(e.key==='Escape' && projectModalOpen){ closeProjectModal(); return; }
       if(e.key==='Escape' && modalOpen){ closeModal(); return; }
       const inField = e.target.matches('input,textarea,select');
-      const anyModalOpen = modalOpen || reminderOpen || projectModalOpen || milestoneModalOpen || settingsOpen;
+      const anyModalOpen = modalOpen || projectModalOpen || milestoneModalOpen || settingsOpen;
       if(!inField && !anyModalOpen && (e.key==='n'||e.key==='N')){
         e.preventDefault(); openModal('once');
       }
